@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Pengajuan Extra Faktur - Final V5 (Lengkap)</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        /* --- 1. RESET & LAYOUT UMUM --- */
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; margin: 0; padding: 20px; }
+        
+        .container { display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Tampilan Desktop */
+        @media (min-width: 1024px) {
+            .container { flex-direction: row; align-items: flex-start; }
+            .panel-input { flex: 1; min-width: 340px; position: sticky; top: 20px; height: 95vh; overflow-y: auto; }
+            .panel-preview { flex: 3; overflow-x: auto; display: flex; justify-content: center; background: #525659; padding: 40px;}
+        }
+
+        /* --- 2. PANEL INPUT (KIRI) --- */
+        .panel-input { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h3 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 0; color: #333; font-size: 18px; }
+        h4 { margin: 15px 0 5px; font-size: 14px; color: #007bff; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #555; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        
+        /* Area Tanda Tangan */
+        .sig-wrapper { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+        .sig-box { border: 2px dashed #bbb; height: 100px; position: relative; background: #fff; width: 100%; border-radius: 4px; margin-top: 5px;}
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+        
+        /* Tombol */
+        .btn-group { display: flex; gap: 5px; margin-top: 5px; }
+        .btn { border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; color: white; flex: 1; font-size: 13px;}
+        
+        .btn-add { background: #28a745; } 
+        .btn-add:hover { background: #218838; }
+        
+        .btn-reset { background: #ffc107; color: #333; } 
+        .btn-reset:hover { background: #e0a800; }
+
+        .btn-clear { background: #6c757d; font-size: 11px; padding: 4px 8px; width: auto; margin-top: 5px; }
+        .btn-download { background: #dc3545; padding: 15px; font-size: 16px; margin-top: 20px; width: 100%; }
+        .btn-download:hover { background: #c82333; }
+
+        /* --- 3. PANEL PREVIEW (KANAN - KERTAS A4 LANDSCAPE) --- */
+        #halaman-laporan {
+            background: white;
+            width: 297mm; /* Lebar A4 Landscape */
+            height: 210mm; /* Tinggi A4 Landscape */
+            padding: 10mm 15mm; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            position: relative;
+            color: black;
+            font-family: Arial, sans-serif;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+        }
+
+        /* Header Laporan */
+        .header-laporan { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px double black; padding-bottom: 10px; margin-bottom: 10px; }
+        .header-left { width: 30%; font-size: 14px; font-weight: bold; }
+        .header-center { width: 40%; text-align: center; font-size: 22px; font-weight: bold; text-decoration: underline; }
+        .header-right { width: 30%; font-size: 12px; }
+        
+        .meta-table { width: 100%; }
+        .meta-table td { padding: 2px; vertical-align: top; }
+        .titik-dua { width: 10px; text-align: center; }
+
+        /* Tabel Utama */
+        .wrapper-tabel { flex-grow: 1; } 
+        table.main-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+        table.main-table th, table.main-table td { border: 1px solid black; padding: 5px 2px; text-align: center; vertical-align: middle; word-wrap: break-word;}
+        table.main-table th { background: #f0f0f0; height: 35px; font-weight: bold; }
+        
+        /* Lebar Kolom */
+        .col-no { width: 3%; }
+        .col-kode { width: 10%; }
+        .col-nama { width: 20%; background: #333; color: white; } /* Header Hitam */
+        .col-tgl { width: 8%; }
+        .col-faktur { width: 8%; }
+        .col-jth { width: 8%; }
+        .col-jml { width: 10%; }
+        .col-rute { width: 10%; background: #333; color: white; } /* Header Hitam */
+        .col-alasan { width: 13%; }
+        .col-ttd-outlet { width: 10%; }
+
+        /* Footer Tanda Tangan */
+        .footer-ttd { display: flex; justify-content: space-between; margin-top: 10px; text-align: center; font-size: 11px; }
+        .box-ttd { width: 22%; display: flex; flex-direction: column; align-items: center; }
+        .ttd-img-area { height: 70px; width: 100%; display: flex; align-items: center; justify-content: center; }
+        .ttd-result { max-height: 60px; max-width: 90%; display: none; } 
+        .line-nama { border-top: 1px solid black; width: 100%; margin-top: 5px; padding-top: 2px; font-weight: bold; text-transform: uppercase;}
+        .tgl-bawah { font-size: 10px; align-self: flex-start; margin-top: 2px; width: 100%; text-align: left; }
+        
+        .catatan { font-size: 10px; margin-top: 10px; font-style: italic; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="panel-input">
+        <h3>1. Data Pengajuan</h3>
+        <div class="form-group">
+            <label>Nama Salesman</label>
+            <input type="text" id="inNama" placeholder="Nama Salesman..." oninput="renderAll()">
+        </div>
+        <div class="form-group">
+            <label>Tanggal Dibawa</label>
+            <input type="date" id="inTgl" oninput="renderAll()">
+        </div>
+
+        <hr>
+        <h3>2. Detail Item</h3>
+        <div id="container-items"></div>
+        
+        <div class="btn-group">
+            <button class="btn btn-add" onclick="addItem()">+ Tambah Item</button>
+            <button class="btn btn-reset" onclick="resetItems()">Reset</button>
+        </div>
+
+        <hr>
+        <h3>3. Tanda Tangan & Nama</h3>
+        
+        <div class="form-group sig-wrapper">
+            <label>Salesman</label>
+            <small style="color:#888;">*Nama otomatis dari Data Pengajuan</small>
+            <div class="sig-box"><canvas id="cSales"></canvas></div>
+            <button class="btn btn-clear" onclick="clearSig('cSales')">Hapus TTD</button>
+        </div>
+
+        <div class="form-group sig-wrapper">
+            <label>Leader</label>
+            <input type="text" id="inNamaLeader" placeholder="Nama Leader..." oninput="renderAll()">
+            <div class="sig-box"><canvas id="cLeader"></canvas></div>
+            <button class="btn btn-clear" onclick="clearSig('cLeader')">Hapus TTD</button>
+        </div>
+
+        <div class="form-group sig-wrapper">
+            <label>Head of Admin</label>
+            <input type="text" id="inNamaAdmin" placeholder="Nama Head of Admin..." oninput="renderAll()">
+            <div class="sig-box"><canvas id="cAdmin"></canvas></div>
+            <button class="btn btn-clear" onclick="clearSig('cAdmin')">Hapus TTD</button>
+        </div>
+
+        <div class="form-group sig-wrapper">
+            <label>Head of Branch</label>
+            <input type="text" id="inNamaBranch" placeholder="Nama Head of Branch..." oninput="renderAll()">
+            <div class="sig-box"><canvas id="cBranch"></canvas></div>
+            <button class="btn btn-clear" onclick="clearSig('cBranch')">Hapus TTD</button>
+        </div>
+
+        <button class="btn btn-download" onclick="generatePDF()">DOWNLOAD PDF</button>
+    </div>
+
+    <div class="panel-preview">
+        <div id="halaman-laporan">
+            
+            <div class="header-laporan">
+                <div class="header-left">
+                    PT OTSUKA DISTRIBUTION INDONESIA<br>CABANG MEDAN
+                </div>
+                <div class="header-center">
+                    FORM PENGAJUAN EXTRA FAKTUR/TAGIHAN
+                </div>
+                <div class="header-right">
+                    <table class="meta-table">
+                        <tr>
+                            <td>NAMA SALESMAN</td>
+                            <td class="titik-dua">:</td>
+                            <td><span id="outNama" style="text-transform: uppercase;">-</span></td>
+                        </tr>
+                        <tr>
+                            <td>TANGGAL DIBAWA</td>
+                            <td class="titik-dua">:</td>
+                            <td><span id="outTgl">-</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="wrapper-tabel">
+                <table class="main-table">
+                    <thead>
+                        <tr>
+                            <th class="col-no">NO</th>
+                            <th class="col-kode">KODE PELANGGAN</th>
+                            <th class="col-nama">NAMA PELANGGAN</th>
+                            <th class="col-tgl">TGL FAKTUR</th>
+                            <th class="col-faktur">NOMOR FAKTUR</th>
+                            <th class="col-jth">JATUH TEMPO</th>
+                            <th class="col-jml">JUMLAH (Rp)</th>
+                            <th class="col-rute">RUTE SEHARUSNYA</th>
+                            <th class="col-alasan">ALASAN</th>
+                            <th class="col-ttd-outlet">TANDA TANGAN OUTLET</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-items"></tbody>
+                </table>
+            </div>
+
+            <div class="footer-ttd">
+                <div class="box-ttd">
+                    <div>DIAJUKAN OLEH<br>SALESMAN</div>
+                    <div class="ttd-img-area"><img id="imgSales" class="ttd-result"></div>
+                    <div class="line-nama">( <span id="outNamaBawah">....................</span> )</div>
+                    <div class="tgl-bawah">TGL. <span class="auto-date">...</span></div>
+                </div>
+
+                <div class="box-ttd">
+                    <div><br>LEADER</div>
+                    <div class="ttd-img-area"><img id="imgLeader" class="ttd-result"></div>
+                    <div class="line-nama">( <span id="outNamaLeader">....................</span> )</div>
+                    <div class="tgl-bawah">TGL. <span class="auto-date">...</span></div>
+                </div>
+
+                <div class="box-ttd">
+                    <div>DIPERIKSA OLEH<br>HEAD OF ADMIN</div>
+                    <div class="ttd-img-area"><img id="imgAdmin" class="ttd-result"></div>
+                    <div class="line-nama">( <span id="outNamaAdmin">....................</span> )</div>
+                    <div class="tgl-bawah">TGL. <span class="auto-date">...</span></div>
+                </div>
+
+                <div class="box-ttd">
+                    <div>DISETUJUI OLEH<br>HEAD OF BRANCH</div>
+                    <div class="ttd-img-area"><img id="imgBranch" class="ttd-result"></div>
+                    <div class="line-nama">( <span id="outNamaBranch">....................</span> )</div>
+                    <div class="tgl-bawah">TGL. <span class="auto-date">...</span></div>
+                </div>
+            </div>
+
+            <div class="catatan">
+                NB : LAMPIRKAN DI DTFT PAGI H-1 FAKTUR DIKELUARKAN. UNTUK FAKTUR YANG KEMBALI DAN MINTA KELUAR BESOK HARAP DILAMPIRKAN PADA SORE HARI SAAT PENGEMBALIAN FAKTUR
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- CONFIG SIGNATURE PAD ---
+    const pads = {};
+    const padIds = ['cSales', 'cLeader', 'cAdmin', 'cBranch'];
+    const imgIds = ['imgSales', 'imgLeader', 'imgAdmin', 'imgBranch'];
+
+    window.onload = function() {
+        padIds.forEach((id, index) => {
+            const canvas = document.getElementById(id);
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+            pads[id] = new SignaturePad(canvas, { backgroundColor: 'rgba(255,255,255,0)' });
+            pads[id].addEventListener("endStroke", () => {
+                const img = document.getElementById(imgIds[index]);
+                if(!pads[id].isEmpty()) {
+                    img.src = pads[id].toDataURL();
+                    img.style.display = 'block';
+                }
+            });
+        });
+
+        // Default Date
+        document.getElementById('inTgl').valueAsDate = new Date();
+        
+        // Init App
+        addItem();
+        renderAll();
+    };
+
+    function clearSig(id) {
+        pads[id].clear();
+        const idx = padIds.indexOf(id);
+        const img = document.getElementById(imgIds[idx]);
+        img.style.display = 'none';
+        img.src = '';
+    }
+
+    function resetItems() {
+        if(confirm("Hapus semua item dan mulai dari awal?")) {
+            document.getElementById('container-items').innerHTML = ''; 
+            rowCount = 0; 
+            addItem(); 
+            renderAll(); 
+        }
+    }
+
+    // Helper: Tanggal Indo
+    function formatTanggalIndo(dateString) {
+        if (!dateString) return "........................";
+        const parts = dateString.split('-'); 
+        if (parts.length !== 3) return dateString;
+        return `${parts[2]}/${parts[1]}/${parts[0]}`; 
+    }
+
+    // --- LOGIKA BARIS ---
+    let rowCount = 0;
+    function addItem() {
+        rowCount++;
+        const container = document.getElementById('container-items');
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.style.background = '#f8f9fa';
+        div.style.padding = '10px';
+        div.style.border = '1px solid #ddd';
+        div.innerHTML = `
+            <div style="font-size:12px; font-weight:bold; margin-bottom:5px;">Item #${rowCount}</div>
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:5px; margin-bottom:5px;">
+                <input type="text" placeholder="Kode" class="i-kode" oninput="renderAll()">
+                <input type="text" placeholder="Nama Pelanggan" class="i-nama" oninput="renderAll()">
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-bottom:5px;">
+                <input type="date" class="i-tgl" oninput="renderAll()">
+                <input type="text" placeholder="No Faktur" class="i-fak" oninput="renderAll()">
+                <input type="date" class="i-jth" oninput="renderAll()">
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
+                <input type="number" placeholder="Rp" class="i-rp" oninput="renderAll()">
+                <input type="text" placeholder="Rute" class="i-rute" oninput="renderAll()">
+                <input type="text" placeholder="Alasan" class="i-alasan" oninput="renderAll()">
+            </div>
+        `;
+        container.appendChild(div);
+        renderAll();
+    }
+
+    // --- RENDER UTAMA ---
+    function renderAll() {
+        // 1. Ambil Value Nama-Nama
+        const namaSales = document.getElementById('inNama').value;
+        const namaLeader = document.getElementById('inNamaLeader').value;
+        const namaAdmin = document.getElementById('inNamaAdmin').value;
+        const namaBranch = document.getElementById('inNamaBranch').value;
+        
+        // 2. Ambil Tanggal
+        const tglInput = document.getElementById('inTgl').value; 
+        const tglDisplay = formatTanggalIndo(tglInput); 
+        
+        // 3. Update Header & Footer
+        document.getElementById('outNama').innerText = namaSales || '........................';
+        document.getElementById('outTgl').innerText = tglDisplay;
+        
+        // Update Nama di Bawah Tanda Tangan (Default Titik-Titik jika kosong)
+        document.getElementById('outNamaBawah').innerText = namaSales || '........................';
+        document.getElementById('outNamaLeader').innerText = namaLeader || '........................';
+        document.getElementById('outNamaAdmin').innerText = namaAdmin || '........................';
+        document.getElementById('outNamaBranch').innerText = namaBranch || '........................';
+
+        // Update Tanggal di Footer
+        const dateSpans = document.querySelectorAll('.auto-date');
+        dateSpans.forEach(span => span.innerText = tglDisplay);
+
+        // 4. Update Tabel
+        const tbody = document.getElementById('tbody-items');
+        tbody.innerHTML = ''; 
+        const items = document.getElementById('container-items').children;
+        
+        for (let i = 0; i < items.length; i++) {
+            const el = items[i];
+            const kode = el.querySelector('.i-kode').value;
+            const namaP = el.querySelector('.i-nama').value;
+            const tgl = el.querySelector('.i-tgl').value;
+            const fak = el.querySelector('.i-fak').value;
+            const jth = el.querySelector('.i-jth').value;
+            const rp = el.querySelector('.i-rp').value;
+            const rute = el.querySelector('.i-rute').value;
+            const alasan = el.querySelector('.i-alasan').value;
+            const fmtRp = rp ? parseInt(rp).toLocaleString('id-ID') : '';
+
+            const rowHTML = `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${kode}</td>
+                    <td style="text-align:left;">${namaP}</td>
+                    <td>${formatTanggalIndo(tgl)}</td>
+                    <td>${fak}</td>
+                    <td>${formatTanggalIndo(jth)}</td>
+                    <td style="text-align:right;">${fmtRp}</td>
+                    <td>${rute}</td>
+                    <td style="text-align:left;">${alasan}</td>
+                    <td></td>
+                </tr>
+            `;
+            tbody.innerHTML += rowHTML;
+        }
+
+        // Min 5 baris kosong
+        const minRow = 5;
+        if(items.length < minRow) {
+            for(let k=0; k < (minRow - items.length); k++) {
+                tbody.innerHTML += `
+                <tr style="height:30px">
+                    <td>${items.length + k + 1}</td>
+                    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                </tr>`;
+            }
+        }
+    }
+
+    function generatePDF() {
+        const element = document.getElementById('halaman-laporan');
+        const opt = {
+            margin:       0, 
+            filename:     'Laporan_Extra_Faktur.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, scrollY: 0, useCORS: true }, 
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        window.scrollTo(0,0);
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
+
+</body>
+</html>
