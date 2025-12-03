@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Pengajuan Extra Faktur - Final V5 (Lengkap)</title>
+    <title>Form Pengajuan Extra Faktur - V6 Database</title>
     
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -15,6 +15,13 @@
         
         .container { display: flex; flex-direction: column; gap: 20px; }
         
+        /* Loading Overlay */
+        #loading {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); color: white; text-align: center;
+            padding-top: 20%; z-index: 9999; font-size: 24px; font-weight: bold;
+        }
+
         /* Tampilan Desktop */
         @media (min-width: 1024px) {
             .container { flex-direction: row; align-items: flex-start; }
@@ -25,14 +32,13 @@
         /* --- 2. PANEL INPUT (KIRI) --- */
         .panel-input { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         h3 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 0; color: #333; font-size: 18px; }
-        h4 { margin: 15px 0 5px; font-size: 14px; color: #007bff; }
         
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #555; }
         input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         
         /* Area Tanda Tangan */
-        .sig-wrapper { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+        .sig-wrapper { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 15px; }
         .sig-box { border: 2px dashed #bbb; height: 100px; position: relative; background: #fff; width: 100%; border-radius: 4px; margin-top: 5px;}
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
         
@@ -47,8 +53,10 @@
         .btn-reset:hover { background: #e0a800; }
 
         .btn-clear { background: #6c757d; font-size: 11px; padding: 4px 8px; width: auto; margin-top: 5px; }
-        .btn-download { background: #dc3545; padding: 15px; font-size: 16px; margin-top: 20px; width: 100%; }
-        .btn-download:hover { background: #c82333; }
+        
+        /* Tombol Simpan Utama */
+        .btn-main { background: #dc3545; padding: 15px; font-size: 16px; margin-top: 20px; width: 100%; border: none; color: white; font-weight: bold; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: 0.2s; }
+        .btn-main:hover { background: #c82333; transform: translateY(-2px); }
 
         /* --- 3. PANEL PREVIEW (KANAN - KERTAS A4 LANDSCAPE) --- */
         #halaman-laporan {
@@ -84,12 +92,12 @@
         /* Lebar Kolom */
         .col-no { width: 3%; }
         .col-kode { width: 10%; }
-        .col-nama { width: 20%; background: #333; color: white; } /* Header Hitam */
+        .col-nama { width: 20%; background: #333; color: white; }
         .col-tgl { width: 8%; }
         .col-faktur { width: 8%; }
         .col-jth { width: 8%; }
         .col-jml { width: 10%; }
-        .col-rute { width: 10%; background: #333; color: white; } /* Header Hitam */
+        .col-rute { width: 10%; background: #333; color: white; }
         .col-alasan { width: 13%; }
         .col-ttd-outlet { width: 10%; }
 
@@ -107,18 +115,29 @@
 </head>
 <body>
 
+<div id="loading">
+    <div style="margin-top: 20px;">
+        ⏳ Sedang Menyimpan Data...<br>
+        <span style="font-size:16px; font-weight:normal;">Jangan tutup halaman ini</span>
+    </div>
+</div>
+
 <div class="container">
     
     <div class="panel-input">
         <h3>1. Data Pengajuan</h3>
-        <div class="form-group">
-            <label>Nama Salesman</label>
-            <input type="text" id="inNama" placeholder="Nama Salesman..." oninput="renderAll()">
-        </div>
-        <div class="form-group">
-            <label>Tanggal Dibawa</label>
-            <input type="date" id="inTgl" oninput="renderAll()">
-        </div>
+        
+        <form id="submit-to-google-sheet">
+            <div class="form-group">
+                <label>Nama Salesman</label>
+                <input type="text" id="inNama" name="Nama Salesman" placeholder="Nama Salesman..." oninput="renderAll()" required>
+            </div>
+            <div class="form-group">
+                <label>Tanggal Dibawa</label>
+                <input type="date" id="inTgl" name="Tanggal Dibawa" oninput="renderAll()" required>
+            </div>
+            <input type="hidden" id="inTotalItem" name="Total Baris Item">
+        </form>
 
         <hr>
         <h3>2. Detail Item</h3>
@@ -132,35 +151,37 @@
         <hr>
         <h3>3. Tanda Tangan & Nama</h3>
         
-        <div class="form-group sig-wrapper">
+        <div class="sig-wrapper">
             <label>Salesman</label>
-            <small style="color:#888;">*Nama otomatis dari Data Pengajuan</small>
+            <small style="color:#888; display:block; margin-bottom:5px;">*Nama otomatis dari Data Pengajuan</small>
             <div class="sig-box"><canvas id="cSales"></canvas></div>
             <button class="btn btn-clear" onclick="clearSig('cSales')">Hapus TTD</button>
         </div>
 
-        <div class="form-group sig-wrapper">
+        <div class="sig-wrapper">
             <label>Leader</label>
             <input type="text" id="inNamaLeader" placeholder="Nama Leader..." oninput="renderAll()">
             <div class="sig-box"><canvas id="cLeader"></canvas></div>
             <button class="btn btn-clear" onclick="clearSig('cLeader')">Hapus TTD</button>
         </div>
 
-        <div class="form-group sig-wrapper">
+        <div class="sig-wrapper">
             <label>Head of Admin</label>
             <input type="text" id="inNamaAdmin" placeholder="Nama Head of Admin..." oninput="renderAll()">
             <div class="sig-box"><canvas id="cAdmin"></canvas></div>
             <button class="btn btn-clear" onclick="clearSig('cAdmin')">Hapus TTD</button>
         </div>
 
-        <div class="form-group sig-wrapper">
+        <div class="sig-wrapper">
             <label>Head of Branch</label>
             <input type="text" id="inNamaBranch" placeholder="Nama Head of Branch..." oninput="renderAll()">
             <div class="sig-box"><canvas id="cBranch"></canvas></div>
             <button class="btn btn-clear" onclick="clearSig('cBranch')">Hapus TTD</button>
         </div>
 
-        <button class="btn btn-download" onclick="generatePDF()">DOWNLOAD PDF</button>
+        <button class="btn-main" onclick="prosesSimpanDanDownload()">
+            💾 SIMPAN DATA & DOWNLOAD PDF
+        </button>
     </div>
 
     <div class="panel-preview">
@@ -247,12 +268,17 @@
 </div>
 
 <script>
-    // --- CONFIG SIGNATURE PAD ---
+    // --- 1. CONFIG URL GOOGLE SCRIPT ---
+    // URL ini sesuai dengan yang Anda berikan
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyDrNfCHF8hZt9xOEFPLmJt8BggGfuGUOnm2aBTZIVhqadiZ7sL8viM_PflsI6tRcX2oA/exec';
+
+    // --- 2. SETUP SIGNATURE PAD & INITIALIZATION ---
     const pads = {};
     const padIds = ['cSales', 'cLeader', 'cAdmin', 'cBranch'];
     const imgIds = ['imgSales', 'imgLeader', 'imgAdmin', 'imgBranch'];
 
     window.onload = function() {
+        // Init Signature Pads
         padIds.forEach((id, index) => {
             const canvas = document.getElementById(id);
             canvas.width = canvas.parentElement.offsetWidth;
@@ -267,10 +293,10 @@
             });
         });
 
-        // Default Date
+        // Set Tanggal Hari Ini
         document.getElementById('inTgl').valueAsDate = new Date();
         
-        // Init App
+        // Init App (Tambah baris pertama)
         addItem();
         renderAll();
     };
@@ -292,7 +318,49 @@
         }
     }
 
-    // Helper: Tanggal Indo
+    // --- 3. LOGIKA SIMPAN KE DATABASE & DOWNLOAD ---
+    function prosesSimpanDanDownload() {
+        const form = document.forms['submit-to-google-sheet'];
+        const inputNama = document.getElementById('inNama');
+        const inputTgl = document.getElementById('inTgl');
+
+        // Validasi Sederhana
+        if(inputNama.value.trim() === "") {
+            alert("Harap isi Nama Salesman!");
+            inputNama.focus();
+            return;
+        }
+        if(inputTgl.value === "") {
+            alert("Harap isi Tanggal!");
+            inputTgl.focus();
+            return;
+        }
+
+        // Update Hidden Input untuk Total Baris
+        document.getElementById('inTotalItem').value = rowCount;
+
+        // Tampilkan Loading
+        const loading = document.getElementById('loading');
+        loading.style.display = 'block';
+
+        // Kirim Data via Fetch API
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(response => {
+                console.log('Success!', response);
+                loading.style.display = 'none';
+                alert("✅ Data Berhasil Disimpan ke Database!\n\nLaporan PDF akan segera diunduh...");
+                generatePDF(); // Lanjut download PDF
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                loading.style.display = 'none';
+                // Jika database error, tetap izinkan download PDF agar operasional tidak terganggu
+                alert("⚠️ Gagal menyimpan ke Database (Cek Koneksi).\n\nNamun PDF akan tetap diunduh.");
+                generatePDF();
+            });
+    }
+
+    // --- 4. LOGIKA PDF & RENDER ---
     function formatTanggalIndo(dateString) {
         if (!dateString) return "........................";
         const parts = dateString.split('-'); 
@@ -300,7 +368,6 @@
         return `${parts[2]}/${parts[1]}/${parts[0]}`; 
     }
 
-    // --- LOGIKA BARIS ---
     let rowCount = 0;
     function addItem() {
         rowCount++;
@@ -331,33 +398,29 @@
         renderAll();
     }
 
-    // --- RENDER UTAMA ---
     function renderAll() {
-        // 1. Ambil Value Nama-Nama
+        // Ambil Value
         const namaSales = document.getElementById('inNama').value;
         const namaLeader = document.getElementById('inNamaLeader').value;
         const namaAdmin = document.getElementById('inNamaAdmin').value;
         const namaBranch = document.getElementById('inNamaBranch').value;
-        
-        // 2. Ambil Tanggal
         const tglInput = document.getElementById('inTgl').value; 
         const tglDisplay = formatTanggalIndo(tglInput); 
         
-        // 3. Update Header & Footer
+        // Update Header & Footer Text
         document.getElementById('outNama').innerText = namaSales || '........................';
         document.getElementById('outTgl').innerText = tglDisplay;
         
-        // Update Nama di Bawah Tanda Tangan (Default Titik-Titik jika kosong)
         document.getElementById('outNamaBawah').innerText = namaSales || '........................';
         document.getElementById('outNamaLeader').innerText = namaLeader || '........................';
         document.getElementById('outNamaAdmin').innerText = namaAdmin || '........................';
         document.getElementById('outNamaBranch').innerText = namaBranch || '........................';
 
-        // Update Tanggal di Footer
+        // Update Auto Date
         const dateSpans = document.querySelectorAll('.auto-date');
         dateSpans.forEach(span => span.innerText = tglDisplay);
 
-        // 4. Update Tabel
+        // Update Tabel Body
         const tbody = document.getElementById('tbody-items');
         tbody.innerHTML = ''; 
         const items = document.getElementById('container-items').children;
