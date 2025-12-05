@@ -3,147 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Pengajuan Extra Faktur - V6 Database</title>
+    <title>Form Pengajuan Extra Faktur - V8 (Full Database)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        /* --- 1. RESET & LAYOUT UMUM --- */
+        /* CSS SAMA SEPERTI SEBELUMNYA */
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; margin: 0; padding: 20px; }
-        
         .container { display: flex; flex-direction: column; gap: 20px; }
-        
-        /* Loading Overlay */
-        #loading {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); color: white; text-align: center;
-            padding-top: 20%; z-index: 9999; font-size: 24px; font-weight: bold;
-        }
-
-        /* Tampilan Desktop */
+        #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); color: white; text-align: center; padding-top: 20%; z-index: 9999; font-size: 24px; font-weight: bold; }
         @media (min-width: 1024px) {
             .container { flex-direction: row; align-items: flex-start; }
             .panel-input { flex: 1; min-width: 340px; position: sticky; top: 20px; height: 95vh; overflow-y: auto; }
             .panel-preview { flex: 3; overflow-x: auto; display: flex; justify-content: center; background: #525659; padding: 40px;}
         }
-
-        /* --- 2. PANEL INPUT (KIRI) --- */
         .panel-input { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         h3 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 0; color: #333; font-size: 18px; }
-        
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #555; }
         input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        
-        /* Area Tanda Tangan */
         .sig-wrapper { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 15px; }
         .sig-box { border: 2px dashed #bbb; height: 100px; position: relative; background: #fff; width: 100%; border-radius: 4px; margin-top: 5px;}
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
-        
-        /* Tombol */
         .btn-group { display: flex; gap: 5px; margin-top: 5px; }
         .btn { border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; color: white; flex: 1; font-size: 13px;}
-        
-        .btn-add { background: #28a745; } 
-        .btn-add:hover { background: #218838; }
-        
-        .btn-reset { background: #ffc107; color: #333; } 
-        .btn-reset:hover { background: #e0a800; }
-
+        .btn-add { background: #28a745; } .btn-add:hover { background: #218838; }
+        .btn-reset { background: #ffc107; color: #333; } .btn-reset:hover { background: #e0a800; }
         .btn-clear { background: #6c757d; font-size: 11px; padding: 4px 8px; width: auto; margin-top: 5px; }
-        
-        /* Tombol Simpan Utama */
         .btn-main { background: #dc3545; padding: 15px; font-size: 16px; margin-top: 20px; width: 100%; border: none; color: white; font-weight: bold; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: 0.2s; }
         .btn-main:hover { background: #c82333; transform: translateY(-2px); }
-
-        /* --- 3. PANEL PREVIEW (KANAN - KERTAS A4 LANDSCAPE) --- */
-        #halaman-laporan {
-            background: white;
-            width: 297mm; /* Lebar A4 Landscape */
-            height: 210mm; /* Tinggi A4 Landscape */
-            padding: 10mm 15mm; 
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            position: relative;
-            color: black;
-            font-family: Arial, sans-serif;
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between; 
-        }
-
-        /* Header Laporan */
+        #halaman-laporan { background: white; width: 297mm; height: 210mm; padding: 10mm 15mm; box-shadow: 0 0 15px rgba(0,0,0,0.5); position: relative; color: black; font-family: Arial, sans-serif; display: flex; flex-direction: column; justify-content: space-between; }
         .header-laporan { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px double black; padding-bottom: 10px; margin-bottom: 10px; }
         .header-left { width: 30%; font-size: 14px; font-weight: bold; }
         .header-center { width: 40%; text-align: center; font-size: 22px; font-weight: bold; text-decoration: underline; }
         .header-right { width: 30%; font-size: 12px; }
-        
-        .meta-table { width: 100%; }
-        .meta-table td { padding: 2px; vertical-align: top; }
-        .titik-dua { width: 10px; text-align: center; }
-
-        /* Tabel Utama */
+        .meta-table { width: 100%; } .meta-table td { padding: 2px; vertical-align: top; } .titik-dua { width: 10px; text-align: center; }
         .wrapper-tabel { flex-grow: 1; } 
         table.main-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
         table.main-table th, table.main-table td { border: 1px solid black; padding: 5px 2px; text-align: center; vertical-align: middle; word-wrap: break-word;}
         table.main-table th { background: #f0f0f0; height: 35px; font-weight: bold; }
-        
-        /* Lebar Kolom */
-        .col-no { width: 3%; }
-        .col-kode { width: 10%; }
-        .col-nama { width: 20%; background: #333; color: white; }
-        .col-tgl { width: 8%; }
-        .col-faktur { width: 8%; }
-        .col-jth { width: 8%; }
-        .col-jml { width: 10%; }
-        .col-rute { width: 10%; background: #333; color: white; }
-        .col-alasan { width: 13%; }
-        .col-ttd-outlet { width: 10%; }
-
-        /* Footer Tanda Tangan */
+        .col-no { width: 3%; } .col-kode { width: 10%; } .col-nama { width: 20%; background: #333; color: white; }
+        .col-tgl { width: 8%; } .col-faktur { width: 8%; } .col-jth { width: 8%; } .col-jml { width: 10%; }
+        .col-rute { width: 10%; background: #333; color: white; } .col-alasan { width: 13%; } .col-ttd-outlet { width: 10%; }
         .footer-ttd { display: flex; justify-content: space-between; margin-top: 10px; text-align: center; font-size: 11px; }
         .box-ttd { width: 22%; display: flex; flex-direction: column; align-items: center; }
         .ttd-img-area { height: 70px; width: 100%; display: flex; align-items: center; justify-content: center; }
         .ttd-result { max-height: 60px; max-width: 90%; display: none; } 
         .line-nama { border-top: 1px solid black; width: 100%; margin-top: 5px; padding-top: 2px; font-weight: bold; text-transform: uppercase;}
         .tgl-bawah { font-size: 10px; align-self: flex-start; margin-top: 2px; width: 100%; text-align: left; }
-        
         .catatan { font-size: 10px; margin-top: 10px; font-style: italic; }
-
     </style>
 </head>
 <body>
 
 <div id="loading">
     <div style="margin-top: 20px;">
-        ⏳ Sedang Menyimpan Data...<br>
-        <span style="font-size:16px; font-weight:normal;">Jangan tutup halaman ini</span>
+        ⏳ Menyimpan <span id="count-items">0</span> Item ke Database...<br>
+        <span style="font-size:16px; font-weight:normal;">Mohon tunggu sebentar</span>
     </div>
 </div>
 
 <div class="container">
-    
     <div class="panel-input">
         <h3>1. Data Pengajuan</h3>
-        
-        <form id="submit-to-google-sheet">
-            <div class="form-group">
-                <label>Nama Salesman</label>
-                <input type="text" id="inNama" name="Nama Salesman" placeholder="Nama Salesman..." oninput="renderAll()" required>
-            </div>
-            <div class="form-group">
-                <label>Tanggal Dibawa</label>
-                <input type="date" id="inTgl" name="Tanggal Dibawa" oninput="renderAll()" required>
-            </div>
-            <input type="hidden" id="inTotalItem" name="Total Baris Item">
-        </form>
+        <div class="form-group">
+            <label>Nama Salesman</label>
+            <input type="text" id="inNama" placeholder="Nama Salesman..." oninput="renderAll()">
+        </div>
+        <div class="form-group">
+            <label>Tanggal Dibawa</label>
+            <input type="date" id="inTgl" oninput="renderAll()">
+        </div>
 
         <hr>
         <h3>2. Detail Item</h3>
-        <div id="container-items"></div>
-        
-        <div class="btn-group">
+        <div id="container-items"></div> <div class="btn-group">
             <button class="btn btn-add" onclick="addItem()">+ Tambah Item</button>
             <button class="btn btn-reset" onclick="resetItems()">Reset</button>
         </div>
@@ -157,21 +93,18 @@
             <div class="sig-box"><canvas id="cSales"></canvas></div>
             <button class="btn btn-clear" onclick="clearSig('cSales')">Hapus TTD</button>
         </div>
-
         <div class="sig-wrapper">
             <label>Leader</label>
             <input type="text" id="inNamaLeader" placeholder="Nama Leader..." oninput="renderAll()">
             <div class="sig-box"><canvas id="cLeader"></canvas></div>
             <button class="btn btn-clear" onclick="clearSig('cLeader')">Hapus TTD</button>
         </div>
-
         <div class="sig-wrapper">
             <label>Head of Admin</label>
             <input type="text" id="inNamaAdmin" placeholder="Nama Head of Admin..." oninput="renderAll()">
             <div class="sig-box"><canvas id="cAdmin"></canvas></div>
             <button class="btn btn-clear" onclick="clearSig('cAdmin')">Hapus TTD</button>
         </div>
-
         <div class="sig-wrapper">
             <label>Head of Branch</label>
             <input type="text" id="inNamaBranch" placeholder="Nama Head of Branch..." oninput="renderAll()">
@@ -179,188 +112,154 @@
             <button class="btn btn-clear" onclick="clearSig('cBranch')">Hapus TTD</button>
         </div>
 
-        <button class="btn-main" onclick="prosesSimpanDanDownload()">
-            💾 SIMPAN DATA & DOWNLOAD PDF
-        </button>
+        <button class="btn-main" onclick="prosesSimpanDanDownload()">💾 SIMPAN DATA & DOWNLOAD PDF</button>
     </div>
 
     <div class="panel-preview">
         <div id="halaman-laporan">
-            
             <div class="header-laporan">
-                <div class="header-left">
-                    PT OTSUKA DISTRIBUTION INDONESIA<br>CABANG MEDAN
-                </div>
-                <div class="header-center">
-                    FORM PENGAJUAN EXTRA FAKTUR/TAGIHAN
-                </div>
+                <div class="header-left">PT OTSUKA DISTRIBUTION INDONESIA<br>CABANG MEDAN</div>
+                <div class="header-center">FORM PENGAJUAN EXTRA FAKTUR/TAGIHAN</div>
                 <div class="header-right">
                     <table class="meta-table">
-                        <tr>
-                            <td>NAMA SALESMAN</td>
-                            <td class="titik-dua">:</td>
-                            <td><span id="outNama" style="text-transform: uppercase;">-</span></td>
-                        </tr>
-                        <tr>
-                            <td>TANGGAL DIBAWA</td>
-                            <td class="titik-dua">:</td>
-                            <td><span id="outTgl">-</span></td>
-                        </tr>
+                        <tr><td>NAMA SALESMAN</td><td class="titik-dua">:</td><td><span id="outNama" style="text-transform: uppercase;">-</span></td></tr>
+                        <tr><td>TANGGAL DIBAWA</td><td class="titik-dua">:</td><td><span id="outTgl">-</span></td></tr>
                     </table>
                 </div>
             </div>
-
             <div class="wrapper-tabel">
                 <table class="main-table">
                     <thead>
                         <tr>
-                            <th class="col-no">NO</th>
-                            <th class="col-kode">KODE PELANGGAN</th>
-                            <th class="col-nama">NAMA PELANGGAN</th>
-                            <th class="col-tgl">TGL FAKTUR</th>
-                            <th class="col-faktur">NOMOR FAKTUR</th>
-                            <th class="col-jth">JATUH TEMPO</th>
-                            <th class="col-jml">JUMLAH (Rp)</th>
-                            <th class="col-rute">RUTE SEHARUSNYA</th>
-                            <th class="col-alasan">ALASAN</th>
-                            <th class="col-ttd-outlet">TANDA TANGAN OUTLET</th>
+                            <th class="col-no">NO</th><th class="col-kode">KODE PELANGGAN</th><th class="col-nama">NAMA PELANGGAN</th><th class="col-tgl">TGL FAKTUR</th>
+                            <th class="col-faktur">NOMOR FAKTUR</th><th class="col-jth">JATUH TEMPO</th><th class="col-jml">JUMLAH (Rp)</th><th class="col-rute">RUTE SEHARUSNYA</th>
+                            <th class="col-alasan">ALASAN</th><th class="col-ttd-outlet">TANDA TANGAN OUTLET</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-items"></tbody>
                 </table>
             </div>
-
             <div class="footer-ttd">
-                <div class="box-ttd">
-                    <div>DIAJUKAN OLEH<br>SALESMAN</div>
-                    <div class="ttd-img-area"><img id="imgSales" class="ttd-result"></div>
-                    <div class="line-nama">( <span id="outNamaBawah">....................</span> )</div>
-                    <div class="tgl-bawah">TGL. <span class="auto-date">...</span></div>
-                </div>
-
-                <div class="box-ttd">
-                    <div><br>LEADER</div>
-                    <div class="ttd-img-area"><img id="imgLeader" class="ttd-result"></div>
-                    <div class="line-nama">( <span id="outNamaLeader">....................</span> )</div>
-                    <div class="tgl-bawah">TGL. <span class="auto-date">...</span></div>
-                </div>
-
-                <div class="box-ttd">
-                    <div>DIPERIKSA OLEH<br>HEAD OF ADMIN</div>
-                    <div class="ttd-img-area"><img id="imgAdmin" class="ttd-result"></div>
-                    <div class="line-nama">( <span id="outNamaAdmin">....................</span> )</div>
-                    <div class="tgl-bawah">TGL. <span class="auto-date">...</span></div>
-                </div>
-
-                <div class="box-ttd">
-                    <div>DISETUJUI OLEH<br>HEAD OF BRANCH</div>
-                    <div class="ttd-img-area"><img id="imgBranch" class="ttd-result"></div>
-                    <div class="line-nama">( <span id="outNamaBranch">....................</span> )</div>
-                    <div class="tgl-bawah">TGL. <span class="auto-date">...</span></div>
-                </div>
+                <div class="box-ttd"><div>DIAJUKAN OLEH<br>SALESMAN</div><div class="ttd-img-area"><img id="imgSales" class="ttd-result"></div><div class="line-nama">( <span id="outNamaBawah">...</span> )</div><div class="tgl-bawah">TGL. <span class="auto-date">...</span></div></div>
+                <div class="box-ttd"><div><br>LEADER</div><div class="ttd-img-area"><img id="imgLeader" class="ttd-result"></div><div class="line-nama">( <span id="outNamaLeader">...</span> )</div><div class="tgl-bawah">TGL. <span class="auto-date">...</span></div></div>
+                <div class="box-ttd"><div>DIPERIKSA OLEH<br>HEAD OF ADMIN</div><div class="ttd-img-area"><img id="imgAdmin" class="ttd-result"></div><div class="line-nama">( <span id="outNamaAdmin">...</span> )</div><div class="tgl-bawah">TGL. <span class="auto-date">...</span></div></div>
+                <div class="box-ttd"><div>DISETUJUI OLEH<br>HEAD OF BRANCH</div><div class="ttd-img-area"><img id="imgBranch" class="ttd-result"></div><div class="line-nama">( <span id="outNamaBranch">...</span> )</div><div class="tgl-bawah">TGL. <span class="auto-date">...</span></div></div>
             </div>
-
-            <div class="catatan">
-                NB : LAMPIRKAN DI DTFT PAGI H-1 FAKTUR DIKELUARKAN. UNTUK FAKTUR YANG KEMBALI DAN MINTA KELUAR BESOK HARAP DILAMPIRKAN PADA SORE HARI SAAT PENGEMBALIAN FAKTUR
-            </div>
+            <div class="catatan">NB : LAMPIRKAN DI DTFT PAGI H-1 FAKTUR DIKELUARKAN. UNTUK FAKTUR YANG KEMBALI DAN MINTA KELUAR BESOK HARAP DILAMPIRKAN PADA SORE HARI SAAT PENGEMBALIAN FAKTUR</div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- 1. CONFIG URL GOOGLE SCRIPT ---
-    // URL ini sesuai dengan yang Anda berikan
+    // URL APPS SCRIPT ANDA (PASTIKAN SUDAH DEPLOY NEW VERSION)
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyDrNfCHF8hZt9xOEFPLmJt8BggGfuGUOnm2aBTZIVhqadiZ7sL8viM_PflsI6tRcX2oA/exec';
 
-    // --- 2. SETUP SIGNATURE PAD & INITIALIZATION ---
     const pads = {};
     const padIds = ['cSales', 'cLeader', 'cAdmin', 'cBranch'];
     const imgIds = ['imgSales', 'imgLeader', 'imgAdmin', 'imgBranch'];
 
     window.onload = function() {
-        // Init Signature Pads
         padIds.forEach((id, index) => {
             const canvas = document.getElementById(id);
-            canvas.width = canvas.parentElement.offsetWidth;
-            canvas.height = canvas.parentElement.offsetHeight;
+            canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight;
             pads[id] = new SignaturePad(canvas, { backgroundColor: 'rgba(255,255,255,0)' });
             pads[id].addEventListener("endStroke", () => {
                 const img = document.getElementById(imgIds[index]);
-                if(!pads[id].isEmpty()) {
-                    img.src = pads[id].toDataURL();
-                    img.style.display = 'block';
-                }
+                if(!pads[id].isEmpty()) { img.src = pads[id].toDataURL(); img.style.display = 'block'; }
             });
         });
 
-        // Set Tanggal Hari Ini
-        document.getElementById('inTgl').valueAsDate = new Date();
+        // Tanggal Setup
+        const today = new Date();
+        document.getElementById('inTgl').valueAsDate = today;
         
-        // Init App (Tambah baris pertama)
-        addItem();
-        renderAll();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        const todayFormatted = `${dd}/${mm}/${yyyy}`;
+
+        document.querySelectorAll('.auto-date').forEach(span => span.innerText = todayFormatted);
+        
+        addItem(); renderAll();
     };
 
     function clearSig(id) {
         pads[id].clear();
-        const idx = padIds.indexOf(id);
-        const img = document.getElementById(imgIds[idx]);
-        img.style.display = 'none';
-        img.src = '';
+        document.getElementById(imgIds[padIds.indexOf(id)]).style.display = 'none';
+        document.getElementById(imgIds[padIds.indexOf(id)]).src = '';
     }
+    function resetItems() { if(confirm("Reset semua item?")) { document.getElementById('container-items').innerHTML = ''; rowCount = 0; addItem(); renderAll(); } }
 
-    function resetItems() {
-        if(confirm("Hapus semua item dan mulai dari awal?")) {
-            document.getElementById('container-items').innerHTML = ''; 
-            rowCount = 0; 
-            addItem(); 
-            renderAll(); 
-        }
-    }
-
-    // --- 3. LOGIKA SIMPAN KE DATABASE & DOWNLOAD ---
+    // --- LOGIKA UTAMA: KUMPULKAN DATA & KIRIM JSON ---
     function prosesSimpanDanDownload() {
-        const form = document.forms['submit-to-google-sheet'];
-        const inputNama = document.getElementById('inNama');
-        const inputTgl = document.getElementById('inTgl');
+        const namaSales = document.getElementById('inNama').value;
+        const tglDibawa = document.getElementById('inTgl').value;
+        
+        if(namaSales.trim() === "") { alert("Nama Salesman harus diisi!"); document.getElementById('inNama').focus(); return; }
+        if(tglDibawa === "") { alert("Tanggal harus diisi!"); document.getElementById('inTgl').focus(); return; }
 
-        // Validasi Sederhana
-        if(inputNama.value.trim() === "") {
-            alert("Harap isi Nama Salesman!");
-            inputNama.focus();
-            return;
-        }
-        if(inputTgl.value === "") {
-            alert("Harap isi Tanggal!");
-            inputTgl.focus();
-            return;
-        }
+        // 1. Ambil semua Data Item dari Form HTML
+        const itemContainers = document.getElementById('container-items').children;
+        let dataItems = [];
+        
+        for (let i = 0; i < itemContainers.length; i++) {
+            const el = itemContainers[i];
+            // Ambil value dari input
+            const kode = el.querySelector('.i-kode').value;
+            const namaP = el.querySelector('.i-nama').value;
+            // Jika baris kosong (kode & nama kosong), skip agar database bersih
+            if(kode === "" && namaP === "") continue; 
 
-        // Update Hidden Input untuk Total Baris
-        document.getElementById('inTotalItem').value = rowCount;
-
-        // Tampilkan Loading
-        const loading = document.getElementById('loading');
-        loading.style.display = 'block';
-
-        // Kirim Data via Fetch API
-        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-            .then(response => {
-                console.log('Success!', response);
-                loading.style.display = 'none';
-                alert("✅ Data Berhasil Disimpan ke Database!\n\nLaporan PDF akan segera diunduh...");
-                generatePDF(); // Lanjut download PDF
-            })
-            .catch(error => {
-                console.error('Error!', error.message);
-                loading.style.display = 'none';
-                // Jika database error, tetap izinkan download PDF agar operasional tidak terganggu
-                alert("⚠️ Gagal menyimpan ke Database (Cek Koneksi).\n\nNamun PDF akan tetap diunduh.");
-                generatePDF();
+            dataItems.push({
+                kode: kode,
+                namaPelanggan: namaP,
+                tglFaktur: el.querySelector('.i-tgl').value,
+                noFaktur: el.querySelector('.i-fak').value,
+                jatuhTempo: el.querySelector('.i-jth').value,
+                jumlah: el.querySelector('.i-rp').value,
+                rute: el.querySelector('.i-rute').value,
+                alasan: el.querySelector('.i-alasan').value
             });
+        }
+
+        // 2. Siapkan Payload JSON
+        const payload = {
+            header: {
+                namaSales: namaSales,
+                tglDibawa: tglDibawa
+            },
+            items: dataItems
+        };
+
+        // 3. Kirim ke Google Apps Script
+        document.getElementById('count-items').innerText = dataItems.length;
+        document.getElementById('loading').style.display = 'block';
+
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify(payload), // Kirim sebagai string JSON
+            headers: { "Content-Type": "text/plain;charset=utf-8" } // Agar tidak pre-flight CORS
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if(data.result === 'success') {
+                alert("✅ Sukses!\nData berhasil masuk ke Google Sheets.\nPDF akan diunduh.");
+                generatePDF();
+            } else {
+                alert("⚠️ Gagal Simpan Database: " + data.error + "\nPDF tetap diunduh.");
+                generatePDF();
+            }
+        })
+        .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            console.error(error);
+            alert("⚠️ Error Koneksi. PDF tetap diunduh.");
+            generatePDF();
+        });
     }
 
-    // --- 4. LOGIKA PDF & RENDER ---
+    // --- Helper & Render ---
     function formatTanggalIndo(dateString) {
         if (!dateString) return "........................";
         const parts = dateString.split('-'); 
@@ -371,12 +270,9 @@
     let rowCount = 0;
     function addItem() {
         rowCount++;
-        const container = document.getElementById('container-items');
         const div = document.createElement('div');
         div.className = 'form-group';
-        div.style.background = '#f8f9fa';
-        div.style.padding = '10px';
-        div.style.border = '1px solid #ddd';
+        div.style.background = '#f8f9fa'; div.style.padding = '10px'; div.style.border = '1px solid #ddd';
         div.innerHTML = `
             <div style="font-size:12px; font-weight:bold; margin-bottom:5px;">Item #${rowCount}</div>
             <div style="display:grid; grid-template-columns: 1fr 2fr; gap:5px; margin-bottom:5px;">
@@ -392,94 +288,56 @@
                 <input type="number" placeholder="Rp" class="i-rp" oninput="renderAll()">
                 <input type="text" placeholder="Rute" class="i-rute" oninput="renderAll()">
                 <input type="text" placeholder="Alasan" class="i-alasan" oninput="renderAll()">
-            </div>
-        `;
-        container.appendChild(div);
+            </div>`;
+        document.getElementById('container-items').appendChild(div);
         renderAll();
     }
 
     function renderAll() {
-        // Ambil Value
         const namaSales = document.getElementById('inNama').value;
-        const namaLeader = document.getElementById('inNamaLeader').value;
-        const namaAdmin = document.getElementById('inNamaAdmin').value;
-        const namaBranch = document.getElementById('inNamaBranch').value;
-        const tglInput = document.getElementById('inTgl').value; 
-        const tglDisplay = formatTanggalIndo(tglInput); 
+        const tglInput = document.getElementById('inTgl').value;
         
-        // Update Header & Footer Text
         document.getElementById('outNama').innerText = namaSales || '........................';
-        document.getElementById('outTgl').innerText = tglDisplay;
+        document.getElementById('outTgl').innerText = formatTanggalIndo(tglInput);
         
         document.getElementById('outNamaBawah').innerText = namaSales || '........................';
-        document.getElementById('outNamaLeader').innerText = namaLeader || '........................';
-        document.getElementById('outNamaAdmin').innerText = namaAdmin || '........................';
-        document.getElementById('outNamaBranch').innerText = namaBranch || '........................';
+        document.getElementById('outNamaLeader').innerText = document.getElementById('inNamaLeader').value || '........................';
+        document.getElementById('outNamaAdmin').innerText = document.getElementById('inNamaAdmin').value || '........................';
+        document.getElementById('outNamaBranch').innerText = document.getElementById('inNamaBranch').value || '........................';
 
-        // Update Auto Date
-        const dateSpans = document.querySelectorAll('.auto-date');
-        dateSpans.forEach(span => span.innerText = tglDisplay);
-
-        // Update Tabel Body
         const tbody = document.getElementById('tbody-items');
-        tbody.innerHTML = ''; 
+        tbody.innerHTML = '';
         const items = document.getElementById('container-items').children;
         
         for (let i = 0; i < items.length; i++) {
             const el = items[i];
-            const kode = el.querySelector('.i-kode').value;
-            const namaP = el.querySelector('.i-nama').value;
-            const tgl = el.querySelector('.i-tgl').value;
-            const fak = el.querySelector('.i-fak').value;
-            const jth = el.querySelector('.i-jth').value;
             const rp = el.querySelector('.i-rp').value;
-            const rute = el.querySelector('.i-rute').value;
-            const alasan = el.querySelector('.i-alasan').value;
             const fmtRp = rp ? parseInt(rp).toLocaleString('id-ID') : '';
-
-            const rowHTML = `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td>${kode}</td>
-                    <td style="text-align:left;">${namaP}</td>
-                    <td>${formatTanggalIndo(tgl)}</td>
-                    <td>${fak}</td>
-                    <td>${formatTanggalIndo(jth)}</td>
-                    <td style="text-align:right;">${fmtRp}</td>
-                    <td>${rute}</td>
-                    <td style="text-align:left;">${alasan}</td>
-                    <td></td>
-                </tr>
-            `;
-            tbody.innerHTML += rowHTML;
+            tbody.innerHTML += `<tr>
+                <td>${i + 1}</td>
+                <td>${el.querySelector('.i-kode').value}</td>
+                <td style="text-align:left;">${el.querySelector('.i-nama').value}</td>
+                <td>${formatTanggalIndo(el.querySelector('.i-tgl').value)}</td>
+                <td>${el.querySelector('.i-fak').value}</td>
+                <td>${formatTanggalIndo(el.querySelector('.i-jth').value)}</td>
+                <td style="text-align:right;">${fmtRp}</td>
+                <td>${el.querySelector('.i-rute').value}</td>
+                <td style="text-align:left;">${el.querySelector('.i-alasan').value}</td>
+                <td></td></tr>`;
         }
-
-        // Min 5 baris kosong
+        
         const minRow = 5;
         if(items.length < minRow) {
-            for(let k=0; k < (minRow - items.length); k++) {
-                tbody.innerHTML += `
-                <tr style="height:30px">
-                    <td>${items.length + k + 1}</td>
-                    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-                </tr>`;
-            }
+            for(let k=0; k < (minRow - items.length); k++) tbody.innerHTML += `<tr style="height:30px"><td>${items.length + k + 1}</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
         }
     }
 
     function generatePDF() {
         const element = document.getElementById('halaman-laporan');
-        const opt = {
-            margin:       0, 
-            filename:     'Laporan_Extra_Faktur.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, scrollY: 0, useCORS: true }, 
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
+        const opt = { margin: 0, filename: 'Laporan_Extra_Faktur.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, scrollY: 0, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
         window.scrollTo(0,0);
         html2pdf().set(opt).from(element).save();
     }
 </script>
-
 </body>
 </html>
