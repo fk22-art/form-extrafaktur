@@ -298,24 +298,55 @@
     function addItem() {
         rowCount++;
         const div = document.createElement('div');
-        div.className = 'form-group';
-        div.style.background = '#f8f9fa'; div.style.padding = '10px'; div.style.border = '1px solid #ddd';
+        div.className = 'grid-item'; 
+        
+        // SAYA UPDATE BAGIAN INI: Menambahkan <label> di atas setiap input
         div.innerHTML = `
-            <div style="font-size:12px; font-weight:bold; margin-bottom:5px;">Item #${rowCount}</div>
-            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:5px; margin-bottom:5px;">
-                <input type="text" placeholder="Kode" class="i-kode" oninput="renderAll()">
-                <input type="text" placeholder="Nama Pelanggan" class="i-nama" oninput="renderAll()">
+            <div style="font-size:0.85rem; font-weight:600; color:#2563eb; margin-bottom:10px; border-bottom:1px dashed #cbd5e1; padding-bottom:5px;">
+                Baris Barang #${rowCount}
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-bottom:5px;">
-                <input type="date" class="i-tgl" oninput="renderAll()">
-                <input type="text" placeholder="No Faktur" class="i-fak" oninput="renderAll()">
-                <input type="date" class="i-jth" oninput="renderAll()">
+
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
+                <div>
+                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Kode</label>
+                    <input type="text" placeholder="Cth: 123" class="i-kode" oninput="renderAll()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Nama Pelanggan</label>
+                    <input type="text" placeholder="Nama Toko..." class="i-nama" oninput="renderAll()">
+                </div>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
-                <input type="number" placeholder="Rp" class="i-rp" oninput="renderAll()">
-                <input type="text" placeholder="Rute" class="i-rute" oninput="renderAll()">
-                <input type="text" placeholder="Alasan" class="i-alasan" oninput="renderAll()">
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:10px;">
+                <div>
+                    <label style="font-size:0.75rem; font-weight:600; color:#2563eb; margin-bottom:2px; display:block;">📅 Tgl Faktur</label>
+                    <input type="date" class="i-tgl" oninput="renderAll()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">No Faktur</label>
+                    <input type="text" placeholder="No Faktur" class="i-fak" oninput="renderAll()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:600; color:#ef4444; margin-bottom:2px; display:block;">📅 Jatuh Tempo</label>
+                    <input type="date" class="i-jth" oninput="renderAll()">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:10px;">
+                <div>
+                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Jumlah (Rp)</label>
+                    <input type="number" placeholder="Rp" class="i-rp" oninput="renderAll()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Rute</label>
+                    <input type="text" placeholder="Rute" class="i-rute" oninput="renderAll()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Alasan</label>
+                    <input type="text" placeholder="Alasan" class="i-alasan" oninput="renderAll()">
+                </div>
             </div>`;
+            
         document.getElementById('container-items').appendChild(div);
         renderAll();
     }
@@ -368,3 +399,4 @@
 </script>
 </body>
 </html>
+
