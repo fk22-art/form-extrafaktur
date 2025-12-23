@@ -3,51 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Pengajuan Extra Faktur - V9 (Reset All)</title>
+    <title>Form Pengajuan V12 - Smart Auto</title>
     
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
-        /* CSS UTAMA */
+        /* --- DESIGN SYSTEM MODERN --- */
+        :root {
+            --primary: #2563eb; --primary-hover: #1d4ed8;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --dark: #1e293b; --light: #f1f5f9; --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+        }
+
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; margin: 0; padding: 20px; }
-        .container { display: flex; flex-direction: column; gap: 20px; }
-        #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); color: white; text-align: center; padding-top: 20%; z-index: 9999; font-size: 24px; font-weight: bold; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f3f4f6; color: var(--dark); margin: 0; padding: 20px; }
+        .container { display: flex; flex-direction: column; gap: 30px; max-width: 1600px; margin: 0 auto; }
         
         @media (min-width: 1024px) {
             .container { flex-direction: row; align-items: flex-start; }
-            .panel-input { flex: 1; min-width: 340px; position: sticky; top: 20px; height: 95vh; overflow-y: auto; }
-            .panel-preview { flex: 3; overflow-x: auto; display: flex; justify-content: center; background: #525659; padding: 40px;}
+            .panel-input { flex: 1; min-width: 400px; position: sticky; top: 20px; height: 95vh; overflow-y: auto; }
+            .panel-preview { flex: 2; overflow-x: auto; display: flex; justify-content: center; align-items: flex-start; }
         }
-        
-        .panel-input { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h3 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 0; color: #333; font-size: 18px; }
+
+        .panel-input { background: var(--white); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
+        h3 { font-weight: 600; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: #555; }
-        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        label { display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 8px; color: #64748b; }
         
-        .sig-wrapper { background: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 15px; }
-        .sig-box { border: 2px dashed #bbb; height: 100px; position: relative; background: #fff; width: 100%; border-radius: 4px; margin-top: 5px;}
+        /* Input & Select Style */
+        input, select { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; font-family: 'Poppins', sans-serif; transition: all 0.3s ease; background: #f8fafc; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .grid-item { display: grid; gap: 10px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px; }
+
+        .sig-wrapper { background: #fff; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .sig-box { border: 2px dashed #cbd5e1; height: 120px; position: relative; background: #fff; width: 100%; border-radius: 8px; margin-top: 10px; transition: border 0.3s; }
+        .sig-box:hover { border-color: var(--primary); }
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
-        
-        /* TOMBOL-TOMBOL */
-        .btn-group { display: flex; gap: 5px; margin-top: 5px; }
-        .btn { border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; color: white; flex: 1; font-size: 13px;}
-        .btn-add { background: #28a745; } .btn-add:hover { background: #218838; }
-        .btn-reset { background: #ffc107; color: #333; } .btn-reset:hover { background: #e0a800; }
-        .btn-clear { background: #6c757d; font-size: 11px; padding: 4px 8px; width: auto; margin-top: 5px; }
-        
-        /* Tombol Reset Full (Baru) */
-        .btn-reset-all { background: #6f42c1; color: white; margin-top: 10px; width: 100%; padding: 10px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; border: 1px solid #5a32a3;}
-        .btn-reset-all:hover { background: #5a32a3; }
 
-        /* Tombol Simpan Utama */
-        .btn-main { background: #dc3545; padding: 15px; font-size: 16px; margin-top: 20px; width: 100%; border: none; color: white; font-weight: bold; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: 0.2s; }
-        .btn-main:hover { background: #c82333; transform: translateY(-2px); }
+        button { font-family: 'Poppins', sans-serif; transition: all 0.2s; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; flex: 1; font-size: 0.9rem; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-add { background: var(--success); } .btn-add:hover { background: #059669; transform: translateY(-1px); }
+        .btn-reset { background: var(--warning); color: #fff; } .btn-reset:hover { background: #d97706; transform: translateY(-1px); }
+        .btn-clear { background: #94a3b8; font-size: 0.8rem; padding: 5px 10px; width: auto; margin-top: 8px; } .btn-clear:hover { background: #64748b; }
+        .btn-reset-all { background: transparent; color: var(--danger); border: 1px solid var(--danger); margin-top: 20px; width: 100%; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; } .btn-reset-all:hover { background: #fef2f2; }
+        .btn-main { background: linear-gradient(135deg, var(--primary), #1e40af); padding: 16px; font-size: 1rem; margin-top: 15px; width: 100%; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3); } .btn-main:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(37, 99, 235, 0.4); }
 
-        /* PREVIEW */
-        #halaman-laporan { background: white; width: 297mm; height: 210mm; padding: 10mm 15mm; box-shadow: 0 0 15px rgba(0,0,0,0.5); position: relative; color: black; font-family: Arial, sans-serif; display: flex; flex-direction: column; justify-content: space-between; }
+        .panel-preview { background: #cbd5e1; padding: 40px; border-radius: var(--radius); box-shadow: inset 0 0 20px rgba(0,0,0,0.1); min-height: 600px; }
+        #halaman-laporan { background: white; width: 297mm; height: 210mm; padding: 10mm 15mm; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; color: black; font-family: Arial, sans-serif; display: flex; flex-direction: column; justify-content: space-between; transform-origin: top center; }
         .header-laporan { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px double black; padding-bottom: 10px; margin-bottom: 10px; }
         .header-left { width: 30%; font-size: 14px; font-weight: bold; }
         .header-center { width: 40%; text-align: center; font-size: 22px; font-weight: bold; text-decoration: underline; }
@@ -67,69 +75,70 @@
         .line-nama { border-top: 1px solid black; width: 100%; margin-top: 5px; padding-top: 2px; font-weight: bold; text-transform: uppercase;}
         .tgl-bawah { font-size: 10px; align-self: flex-start; margin-top: 2px; width: 100%; text-align: left; }
         .catatan { font-size: 10px; margin-top: 10px; font-style: italic; }
+        #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); color: var(--primary); text-align: center; padding-top: 20%; z-index: 9999; font-size: 1.5rem; font-weight: 600; }
+        #draft-status { position: fixed; bottom: 20px; right: 20px; background: #dcfce7; color: #166534; padding: 10px 15px; border-radius: 50px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 999; }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <div style="margin-top: 20px;">
-        ⏳ Menyimpan <span id="count-items">0</span> Item ke Database...<br>
-        <span style="font-size:16px; font-weight:normal;">Mohon tunggu sebentar</span>
+    <div style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: inline-block;">
+        <div style="font-size: 40px;">🚀</div>Menyimpan Data...<br><span style="font-size:1rem; font-weight:normal; color: #64748b;">Mohon tunggu sebentar</span>
     </div>
 </div>
 
+<div id="draft-status">💾 Draft Tersimpan Otomatis</div>
+
 <div class="container">
     <div class="panel-input">
-        <h3>1. Data Pengajuan</h3>
+        <h3>📝 Data Pengajuan</h3>
         <div class="form-group">
             <label>Nama Salesman</label>
-            <input type="text" id="inNama" placeholder="Nama Salesman..." oninput="renderAll()">
+            <select id="inNama" onchange="handleInput()">
+                <option value="">-- Pilih Salesman --</option>
+                </select>
         </div>
         <div class="form-group">
             <label>Tanggal Dibawa</label>
-            <input type="date" id="inTgl" oninput="renderAll()">
+            <input type="date" id="inTgl" oninput="handleInput()">
         </div>
 
-        <hr>
-        <h3>2. Detail Item</h3>
+        <h3>📦 Detail Item</h3>
         <div id="container-items"></div>
         
         <div class="btn-group">
-            <button class="btn btn-add" onclick="addItem()">+ Tambah Item</button>
+            <button class="btn btn-add" onclick="addItem(true)">+ Tambah Item</button>
             <button class="btn btn-reset" onclick="resetItems()">Reset Item</button>
         </div>
 
-        <hr>
-        <h3>3. Tanda Tangan & Nama</h3>
+        <h3 style="margin-top: 30px;">✍️ Tanda Tangan</h3>
         
         <div class="sig-wrapper">
-            <label>Salesman</label>
-            <small style="color:#888; display:block; margin-bottom:5px;">*Nama otomatis dari Data Pengajuan</small>
+            <label>Salesman</label> <small style="color:#64748b; font-size:0.8rem;">(Nama otomatis dari atas)</small>
             <div class="sig-box"><canvas id="cSales"></canvas></div>
-            <button class="btn btn-clear" onclick="clearSig('cSales')">Hapus TTD</button>
+            <button class="btn btn-clear btn" onclick="clearSig('cSales')">Hapus TTD</button>
         </div>
         <div class="sig-wrapper">
             <label>Leader</label>
-            <input type="text" id="inNamaLeader" placeholder="Nama Leader..." oninput="renderAll()">
+            <input type="text" id="inNamaLeader" placeholder="Nama Leader..." oninput="handleInput()">
             <div class="sig-box"><canvas id="cLeader"></canvas></div>
-            <button class="btn btn-clear" onclick="clearSig('cLeader')">Hapus TTD</button>
+            <button class="btn btn-clear btn" onclick="clearSig('cLeader')">Hapus TTD</button>
         </div>
         <div class="sig-wrapper">
             <label>Head of Admin</label>
-            <input type="text" id="inNamaAdmin" placeholder="Nama Head of Admin..." oninput="renderAll()">
+            <input type="text" id="inNamaAdmin" placeholder="Nama Head of Admin..." oninput="handleInput()">
             <div class="sig-box"><canvas id="cAdmin"></canvas></div>
-            <button class="btn btn-clear" onclick="clearSig('cAdmin')">Hapus TTD</button>
+            <button class="btn btn-clear btn" onclick="clearSig('cAdmin')">Hapus TTD</button>
         </div>
         <div class="sig-wrapper">
             <label>Head of Branch</label>
-            <input type="text" id="inNamaBranch" placeholder="Nama Head of Branch..." oninput="renderAll()">
+            <input type="text" id="inNamaBranch" placeholder="Nama Head of Branch..." oninput="handleInput()">
             <div class="sig-box"><canvas id="cBranch"></canvas></div>
-            <button class="btn btn-clear" onclick="clearSig('cBranch')">Hapus TTD</button>
+            <button class="btn btn-clear btn" onclick="clearSig('cBranch')">Hapus TTD</button>
         </div>
 
-        <button class="btn-reset-all" onclick="resetFormulirTotal()">🔄 RESET FORMULIR (BERSIHKAN SEMUA)</button>
-
-        <button class="btn-main" onclick="prosesSimpanDanDownload()">💾 SIMPAN DATA & DOWNLOAD PDF</button>
+        <button class="btn-reset-all" onclick="resetFormulirTotal()">⚠️ Kosongkan Formulir (Hapus Draft)</button>
+        <button class="btn-main" onclick="prosesSimpanDanDownload()">💾 Simpan Data & Download PDF</button>
     </div>
 
     <div class="panel-preview">
@@ -168,91 +177,228 @@
 </div>
 
 <script>
-    // URL DATABASE (PASTIKAN SUDAH BENAR)
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyDrNfCHF8hZt9xOEFPLmJt8BggGfuGUOnm2aBTZIVhqadiZ7sL8viM_PflsI6tRcX2oA/exec';
+    // --- KONFIGURASI DATA (EDIT DISINI) ---
+    // Daftar Nama Salesman (Pisahkan dengan koma)
+    const LIST_SALESMAN = [
+        "TOGR01 Wendy Mahendra", 
+        "TOGR02 Edi Frederik Sinaga", 
+        "TORT01 Reinanda Barimbing", 
+        "TORT02 Muhammad Reza",
+        "TORT03 Sandy Ramadhan Febrianto",
+        "TORT04 Eko Darmawan", 
+        "TORT05 Wahyu Alamsyah Tanjung", 
+        "TORT06 Lutgar Ronimus Halawa",
+        "TORT07 Eko Prastyo",
+        "TORT08 Togar",
+        "TORT09 Agusto Fernando"
+    ];
 
+    // Daftar Rute (Pisahkan dengan koma)
+    const LIST_RUTE = [
+        "Senin 1", 
+        "Selasa 1", 
+        "Rabu 1", 
+        "Kamis 1",
+        "Jumat 1",
+        "Sabtu 1",
+        "Senin 2",
+        "Selasa 2",
+        "Rabu 2",
+        "Kamis 2",
+        "Jumat 2",
+        "Sabtu 2"
+    ];
+    // ----------------------------------------
+
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyDrNfCHF8hZt9xOEFPLmJt8BggGfuGUOnm2aBTZIVhqadiZ7sL8viM_PflsI6tRcX2oA/exec';
     const pads = {};
     const padIds = ['cSales', 'cLeader', 'cAdmin', 'cBranch'];
     const imgIds = ['imgSales', 'imgLeader', 'imgAdmin', 'imgBranch'];
 
     window.onload = function() {
+        // Init Signature Pads
         padIds.forEach((id, index) => {
             const canvas = document.getElementById(id);
-            canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight;
+            canvas.width = canvas.parentElement.clientWidth; 
+            canvas.height = canvas.parentElement.clientHeight;
             pads[id] = new SignaturePad(canvas, { backgroundColor: 'rgba(255,255,255,0)' });
             pads[id].addEventListener("endStroke", () => {
                 const img = document.getElementById(imgIds[index]);
-                if(!pads[id].isEmpty()) { img.src = pads[id].toDataURL(); img.style.display = 'block'; }
+                if(!pads[id].isEmpty()) { 
+                    img.src = pads[id].toDataURL(); 
+                    img.style.display = 'block'; 
+                    saveDraft(); 
+                }
             });
         });
 
-        // Set Default Date (Today)
-        setDefaultDate();
-        
-        addItem(); renderAll();
+        // INIT DROPDOWN SALESMAN
+        const selectSales = document.getElementById('inNama');
+        LIST_SALESMAN.forEach(nama => {
+            let option = document.createElement("option");
+            option.text = nama;
+            option.value = nama;
+            selectSales.add(option);
+        });
+
+        loadDraft();
     };
+
+    function handleInput() { renderAll(); saveDraft(); }
+
+    // --- HELPER FUNCTIONS BARU (V12) ---
+    // 1. Title Case (Huruf Besar Awal Kata)
+    function toTitleCase(str) {
+        return str.toLowerCase().split(' ').map(function(word) {
+            return (word.charAt(0).toUpperCase() + word.slice(1));
+        }).join(' ');
+    }
+
+    // 2. Limit 5 Digit Angka
+    function limitKode(el) {
+        el.value = el.value.replace(/[^0-9]/g, '').slice(0, 5);
+        handleInput();
+    }
+
+    // 3. Auto Capitalize Input Nama
+    function autoCapNama(el) {
+        let start = el.selectionStart; // Simpan posisi kursor
+        el.value = toTitleCase(el.value);
+        el.setSelectionRange(start, start); // Kembalikan posisi kursor
+        handleInput();
+    }
+
+    // 4. Auto Tanggal Jatuh Tempo (+14 Hari)
+    function autoDateJatuhTempo(el) {
+        const row = el.parentElement.parentElement.parentElement; // Naik ke grid-item
+        const tglFakturVal = el.value;
+        const jthTempoInput = row.querySelector('.i-jth');
+
+        if (tglFakturVal) {
+            const date = new Date(tglFakturVal);
+            date.setDate(date.getDate() + 14); // Tambah 14 Hari
+            jthTempoInput.valueAsDate = date;
+        }
+        handleInput();
+    }
+
+    // --- Core Functions ---
+    function saveDraft() {
+        const dataDraft = {
+            nama: document.getElementById('inNama').value,
+            tgl: document.getElementById('inTgl').value,
+            leader: document.getElementById('inNamaLeader').value,
+            admin: document.getElementById('inNamaAdmin').value,
+            branch: document.getElementById('inNamaBranch').value,
+            items: [],
+            signatures: {}
+        };
+        const itemContainers = document.getElementById('container-items').children;
+        for (let i = 0; i < itemContainers.length; i++) {
+            const el = itemContainers[i];
+            dataDraft.items.push({
+                kode: el.querySelector('.i-kode').value,
+                nama: el.querySelector('.i-nama').value,
+                tglF: el.querySelector('.i-tgl').value,
+                fak: el.querySelector('.i-fak').value,
+                jth: el.querySelector('.i-jth').value,
+                rp: el.querySelector('.i-rp').value,
+                rute: el.querySelector('.i-rute').value,
+                alasan: el.querySelector('.i-alasan').value
+            });
+        }
+        imgIds.forEach((imgId, idx) => {
+            const imgEl = document.getElementById(imgId);
+            if(imgEl.src && imgEl.style.display !== 'none') {
+                dataDraft.signatures[idx] = imgEl.src;
+            }
+        });
+        localStorage.setItem('formDraft_Otsuka_V12', JSON.stringify(dataDraft));
+        const notif = document.getElementById('draft-status');
+        notif.style.opacity = '1';
+        setTimeout(() => { notif.style.opacity = '0'; }, 2000);
+    }
+
+    function loadDraft() {
+        const savedData = localStorage.getItem('formDraft_Otsuka_V12');
+        if (!savedData) { setDefaultDate(); addItem(); renderAll(); return; }
+        const data = JSON.parse(savedData);
+        document.getElementById('inNama').value = data.nama || '';
+        document.getElementById('inTgl').value = data.tgl || '';
+        if(!data.tgl) setDefaultDate();
+        document.getElementById('inNamaLeader').value = data.leader || '';
+        document.getElementById('inNamaAdmin').value = data.admin || '';
+        document.getElementById('inNamaBranch').value = data.branch || '';
+        document.getElementById('container-items').innerHTML = '';
+        rowCount = 0;
+        if (data.items && data.items.length > 0) {
+            data.items.forEach(item => {
+                addItem(false);
+                const lastItem = document.getElementById('container-items').lastChild;
+                lastItem.querySelector('.i-kode').value = item.kode;
+                lastItem.querySelector('.i-nama').value = item.nama;
+                lastItem.querySelector('.i-tgl').value = item.tglF;
+                lastItem.querySelector('.i-fak').value = item.fak;
+                lastItem.querySelector('.i-jth').value = item.jth;
+                lastItem.querySelector('.i-rp').value = item.rp;
+                lastItem.querySelector('.i-rute').value = item.rute;
+                lastItem.querySelector('.i-alasan').value = item.alasan;
+            });
+        } else { addItem(); }
+        if(data.signatures) {
+            Object.keys(data.signatures).forEach(idx => {
+                const imgEl = document.getElementById(imgIds[idx]);
+                imgEl.src = data.signatures[idx];
+                imgEl.style.display = 'block';
+            });
+        }
+        renderAll();
+    }
 
     function setDefaultDate() {
         const today = new Date();
-        document.getElementById('inTgl').valueAsDate = today;
+        if(!document.getElementById('inTgl').value) document.getElementById('inTgl').valueAsDate = today;
         const dd = String(today.getDate()).padStart(2, '0');
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const yyyy = today.getFullYear();
-        const todayFormatted = `${dd}/${mm}/${yyyy}`;
-        document.querySelectorAll('.auto-date').forEach(span => span.innerText = todayFormatted);
+        document.querySelectorAll('.auto-date').forEach(span => span.innerText = `${dd}/${mm}/${yyyy}`);
     }
 
     function clearSig(id) {
         pads[id].clear();
-        document.getElementById(imgIds[padIds.indexOf(id)]).style.display = 'none';
-        document.getElementById(imgIds[padIds.indexOf(id)]).src = '';
+        const idx = padIds.indexOf(id);
+        const img = document.getElementById(imgIds[idx]);
+        img.style.display = 'none'; img.src = '';
+        saveDraft();
     }
 
-    function resetItems() { if(confirm("Reset isi detail item saja?")) { document.getElementById('container-items').innerHTML = ''; rowCount = 0; addItem(); renderAll(); } }
-
-    // --- FUNGSI BARU: RESET FORMULIR TOTAL ---
-    function resetFormulirTotal() {
-        if(confirm("⚠️ PERINGATAN: Apakah Anda yakin ingin menghapus SELURUH isi formulir (Nama, Item, Tanda Tangan)?\nData yang belum disimpan akan hilang.")) {
-            
-            // 1. Reset Header
-            document.getElementById('inNama').value = '';
-            setDefaultDate(); // Reset tanggal ke hari ini
-
-            // 2. Reset Items
+    function resetItems() { 
+        if(confirm("Reset semua item barang?")) { 
             document.getElementById('container-items').innerHTML = ''; 
-            rowCount = 0; 
-            addItem(); 
+            rowCount = 0; addItem(); renderAll(); saveDraft(); 
+        } 
+    }
 
-            // 3. Reset Nama Pejabat
-            document.getElementById('inNamaLeader').value = '';
-            document.getElementById('inNamaAdmin').value = '';
-            document.getElementById('inNamaBranch').value = '';
-
-            // 4. Hapus Semua Tanda Tangan
-            padIds.forEach(id => clearSig(id));
-
-            // 5. Update Preview
-            renderAll();
+    function resetFormulirTotal() {
+        if(confirm("⚠️ HAPUS DRAFT?\nSemua data akan hilang.")) {
+            localStorage.removeItem('formDraft_Otsuka_V12');
+            location.reload();
         }
     }
 
-    // --- LOGIKA SIMPAN & KIRIM ---
     function prosesSimpanDanDownload() {
         const namaSales = document.getElementById('inNama').value;
         const tglDibawa = document.getElementById('inTgl').value;
-        
-        if(namaSales.trim() === "") { alert("Nama Salesman harus diisi!"); document.getElementById('inNama').focus(); return; }
-        if(tglDibawa === "") { alert("Tanggal harus diisi!"); document.getElementById('inTgl').focus(); return; }
+        if(namaSales === "") { alert("❌ Pilih Nama Salesman!"); document.getElementById('inNama').focus(); return; }
+        if(tglDibawa === "") { alert("❌ Tanggal belum diisi!"); document.getElementById('inTgl').focus(); return; }
 
         const itemContainers = document.getElementById('container-items').children;
         let dataItems = [];
-        
         for (let i = 0; i < itemContainers.length; i++) {
             const el = itemContainers[i];
             const kode = el.querySelector('.i-kode').value;
             const namaP = el.querySelector('.i-nama').value;
             if(kode === "" && namaP === "") continue; 
-
             dataItems.push({
                 kode: kode, namaPelanggan: namaP,
                 tglFaktur: el.querySelector('.i-tgl').value, noFaktur: el.querySelector('.i-fak').value,
@@ -262,21 +408,17 @@
         }
 
         const payload = { header: { namaSales: namaSales, tglDibawa: tglDibawa }, items: dataItems };
-
-        document.getElementById('count-items').innerText = dataItems.length;
         document.getElementById('loading').style.display = 'block';
 
-        fetch(scriptURL, {
-            method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }
-        })
+        fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
         .then(response => response.json())
         .then(data => {
             document.getElementById('loading').style.display = 'none';
             if(data.result === 'success') {
-                alert("✅ Sukses!\nData tersimpan & Notifikasi terkirim.\nPDF akan diunduh.");
+                alert("✅ DATA TERSIMPAN!\nPDF akan diunduh.");
                 generatePDF();
             } else {
-                alert("⚠️ Gagal Simpan Database: " + data.error + "\nPDF tetap diunduh.");
+                alert("⚠️ Gagal Database: " + data.error + "\nPDF tetap diunduh.");
                 generatePDF();
             }
         })
@@ -295,69 +437,53 @@
     }
 
     let rowCount = 0;
-    function addItem() {
+    function addItem(autoSave = true) {
         rowCount++;
+        
+        // Buat Opsi Rute HTML
+        let optionsRute = `<option value="">-- Pilih Rute --</option>`;
+        LIST_RUTE.forEach(r => { optionsRute += `<option value="${r}">${r}</option>`; });
+
         const div = document.createElement('div');
         div.className = 'grid-item'; 
-        
-        // SAYA UPDATE BAGIAN INI: Menambahkan <label> di atas setiap input
         div.innerHTML = `
-            <div style="font-size:0.85rem; font-weight:600; color:#2563eb; margin-bottom:10px; border-bottom:1px dashed #cbd5e1; padding-bottom:5px;">
-                Baris Toko #${rowCount}
-            </div>
-
+            <div style="font-size:0.85rem; font-weight:600; color:#2563eb; margin-bottom:10px; border-bottom:1px dashed #cbd5e1; padding-bottom:5px;">Baris Barang #${rowCount}</div>
             <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
                 <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Kode</label>
-                    <input type="text" placeholder="Cth: 123" class="i-kode" oninput="renderAll()">
+                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Kode (Max 5)</label>
+                    <input type="text" placeholder="12345" class="i-kode" oninput="limitKode(this)">
                 </div>
                 <div>
                     <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Nama Pelanggan</label>
-                    <input type="text" placeholder="Nama Toko..." class="i-nama" oninput="renderAll()">
+                    <input type="text" placeholder="Nama Toko..." class="i-nama" oninput="autoCapNama(this)">
                 </div>
             </div>
-
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:10px;">
                 <div>
                     <label style="font-size:0.75rem; font-weight:600; color:#2563eb; margin-bottom:2px; display:block;">📅 Tgl Faktur</label>
-                    <input type="date" class="i-tgl" oninput="renderAll()">
+                    <input type="date" class="i-tgl" onchange="autoDateJatuhTempo(this)">
                 </div>
-                <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">No Faktur</label>
-                    <input type="text" placeholder="No Faktur" class="i-fak" oninput="renderAll()">
-                </div>
-                <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#ef4444; margin-bottom:2px; display:block;">📅 Jatuh Tempo</label>
-                    <input type="date" class="i-jth" oninput="renderAll()">
-                </div>
+                <div><label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">No Faktur</label><input type="text" placeholder="No Faktur" class="i-fak" oninput="handleInput()"></div>
+                <div><label style="font-size:0.75rem; font-weight:600; color:#ef4444; margin-bottom:2px; display:block;">📅 Jatuh Tempo</label><input type="date" class="i-jth" oninput="handleInput()"></div>
             </div>
-
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:10px;">
-                <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Jumlah (Rp)</label>
-                    <input type="number" placeholder="Rp" class="i-rp" oninput="renderAll()">
-                </div>
+                <div><label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Jumlah (Rp)</label><input type="number" placeholder="Rp" class="i-rp" oninput="handleInput()"></div>
                 <div>
                     <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Rute</label>
-                    <input type="text" placeholder="Rute" class="i-rute" oninput="renderAll()">
+                    <select class="i-rute" onchange="handleInput()">${optionsRute}</select>
                 </div>
-                <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Alasan</label>
-                    <input type="text" placeholder="Alasan" class="i-alasan" oninput="renderAll()">
-                </div>
+                <div><label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Alasan</label><input type="text" placeholder="Alasan" class="i-alasan" oninput="handleInput()"></div>
             </div>`;
-            
         document.getElementById('container-items').appendChild(div);
+        if(autoSave) saveDraft();
         renderAll();
     }
 
     function renderAll() {
         const namaSales = document.getElementById('inNama').value;
         const tglInput = document.getElementById('inTgl').value;
-        
         document.getElementById('outNama').innerText = namaSales || '........................';
         document.getElementById('outTgl').innerText = formatTanggalIndo(tglInput);
-        
         document.getElementById('outNamaBawah').innerText = namaSales || '........................';
         document.getElementById('outNamaLeader').innerText = document.getElementById('inNamaLeader').value || '........................';
         document.getElementById('outNamaAdmin').innerText = document.getElementById('inNamaAdmin').value || '........................';
@@ -366,24 +492,12 @@
         const tbody = document.getElementById('tbody-items');
         tbody.innerHTML = '';
         const items = document.getElementById('container-items').children;
-        
         for (let i = 0; i < items.length; i++) {
             const el = items[i];
             const rp = el.querySelector('.i-rp').value;
             const fmtRp = rp ? parseInt(rp).toLocaleString('id-ID') : '';
-            tbody.innerHTML += `<tr>
-                <td>${i + 1}</td>
-                <td>${el.querySelector('.i-kode').value}</td>
-                <td style="text-align:left;">${el.querySelector('.i-nama').value}</td>
-                <td>${formatTanggalIndo(el.querySelector('.i-tgl').value)}</td>
-                <td>${el.querySelector('.i-fak').value}</td>
-                <td>${formatTanggalIndo(el.querySelector('.i-jth').value)}</td>
-                <td style="text-align:right;">${fmtRp}</td>
-                <td>${el.querySelector('.i-rute').value}</td>
-                <td style="text-align:left;">${el.querySelector('.i-alasan').value}</td>
-                <td></td></tr>`;
+            tbody.innerHTML += `<tr><td>${i + 1}</td><td>${el.querySelector('.i-kode').value}</td><td style="text-align:left;">${el.querySelector('.i-nama').value}</td><td>${formatTanggalIndo(el.querySelector('.i-tgl').value)}</td><td>${el.querySelector('.i-fak').value}</td><td>${formatTanggalIndo(el.querySelector('.i-jth').value)}</td><td style="text-align:right;">${fmtRp}</td><td>${el.querySelector('.i-rute').value}</td><td style="text-align:left;">${el.querySelector('.i-alasan').value}</td><td></td></tr>`;
         }
-        
         const minRow = 5;
         if(items.length < minRow) {
             for(let k=0; k < (minRow - items.length); k++) tbody.innerHTML += `<tr style="height:30px"><td>${items.length + k + 1}</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
@@ -399,5 +513,3 @@
 </script>
 </body>
 </html>
-
-
