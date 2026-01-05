@@ -3,514 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Pengajuan V12 - Smart Auto</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Form Laporan V12.1 - Smart Auto Reset</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        /* --- DESIGN SYSTEM MODERN --- */
-        :root {
-            --primary: #2563eb; --primary-hover: #1d4ed8;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-            --dark: #1e293b; --light: #f1f5f9; --white: #ffffff;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --radius: 12px;
-        }
-
-        * { box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background-color: #f3f4f6; color: var(--dark); margin: 0; padding: 20px; }
-        .container { display: flex; flex-direction: column; gap: 30px; max-width: 1600px; margin: 0 auto; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; padding: 20px; color: #333; }
+        .container { max-width: 850px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        @media (min-width: 1024px) {
-            .container { flex-direction: row; align-items: flex-start; }
-            .panel-input { flex: 1; min-width: 400px; position: sticky; top: 20px; height: 95vh; overflow-y: auto; }
-            .panel-preview { flex: 2; overflow-x: auto; display: flex; justify-content: center; align-items: flex-start; }
-        }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #0056b3; padding-bottom: 10px; }
+        .header h2 { margin: 0; color: #0056b3; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0; color: #666; font-size: 0.9em; }
 
-        .panel-input { background: var(--white); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid #e2e8f0; }
-        h3 { font-weight: 600; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 500; font-size: 0.9rem; margin-bottom: 8px; color: #64748b; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
+        input[type="text"], input[type="date"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
         
-        /* Input & Select Style */
-        input, select { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; font-family: 'Poppins', sans-serif; transition: all 0.3s ease; background: #f8fafc; }
-        input:focus, select:focus { border-color: var(--primary); outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        /* Tabel Input */
+        table.input-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table.input-table th { background: #0056b3; color: white; padding: 10px; text-align: left; }
+        table.input-table td { padding: 5px; border: 1px solid #ddd; }
         
-        .grid-item { display: grid; gap: 10px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px; }
+        button { cursor: pointer; padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: #17a2b8; color: white; margin-bottom: 10px; }
+        .btn-remove { background: #dc3545; color: white; padding: 5px 10px; }
+        .btn-generate { background: #28a745; color: white; width: 100%; font-size: 18px; margin-top: 20px; padding: 15px; display: block; }
+        .btn-generate:hover { background: #218838; }
 
-        .sig-wrapper { background: #fff; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .sig-box { border: 2px dashed #cbd5e1; height: 120px; position: relative; background: #fff; width: 100%; border-radius: 8px; margin-top: 10px; transition: border 0.3s; }
-        .sig-box:hover { border-color: var(--primary); }
-        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
-
-        button { font-family: 'Poppins', sans-serif; transition: all 0.2s; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn { padding: 10px 15px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; flex: 1; font-size: 0.9rem; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-add { background: var(--success); } .btn-add:hover { background: #059669; transform: translateY(-1px); }
-        .btn-reset { background: var(--warning); color: #fff; } .btn-reset:hover { background: #d97706; transform: translateY(-1px); }
-        .btn-clear { background: #94a3b8; font-size: 0.8rem; padding: 5px 10px; width: auto; margin-top: 8px; } .btn-clear:hover { background: #64748b; }
-        .btn-reset-all { background: transparent; color: var(--danger); border: 1px solid var(--danger); margin-top: 20px; width: 100%; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; } .btn-reset-all:hover { background: #fef2f2; }
-        .btn-main { background: linear-gradient(135deg, var(--primary), #1e40af); padding: 16px; font-size: 1rem; margin-top: 15px; width: 100%; border: none; color: white; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3); } .btn-main:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(37, 99, 235, 0.4); }
-
-        .panel-preview { background: #cbd5e1; padding: 40px; border-radius: var(--radius); box-shadow: inset 0 0 20px rgba(0,0,0,0.1); min-height: 600px; }
-        #halaman-laporan { background: white; width: 297mm; height: 210mm; padding: 10mm 15mm; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; color: black; font-family: Arial, sans-serif; display: flex; flex-direction: column; justify-content: space-between; transform-origin: top center; }
-        .header-laporan { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px double black; padding-bottom: 10px; margin-bottom: 10px; }
-        .header-left { width: 30%; font-size: 14px; font-weight: bold; }
-        .header-center { width: 40%; text-align: center; font-size: 22px; font-weight: bold; text-decoration: underline; }
-        .header-right { width: 30%; font-size: 12px; }
-        .meta-table { width: 100%; } .meta-table td { padding: 2px; vertical-align: top; } .titik-dua { width: 10px; text-align: center; }
-        .wrapper-tabel { flex-grow: 1; } 
-        table.main-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
-        table.main-table th, table.main-table td { border: 1px solid black; padding: 5px 2px; text-align: center; vertical-align: middle; word-wrap: break-word;}
-        table.main-table th { background: #f0f0f0; height: 35px; font-weight: bold; }
-        .col-no { width: 3%; } .col-kode { width: 10%; } .col-nama { width: 20%; background: #333; color: white; }
-        .col-tgl { width: 8%; } .col-faktur { width: 8%; } .col-jth { width: 8%; } .col-jml { width: 10%; }
-        .col-rute { width: 10%; background: #333; color: white; } .col-alasan { width: 13%; } .col-ttd-outlet { width: 10%; }
-        .footer-ttd { display: flex; justify-content: space-between; margin-top: 10px; text-align: center; font-size: 11px; }
-        .box-ttd { width: 22%; display: flex; flex-direction: column; align-items: center; }
-        .ttd-img-area { height: 70px; width: 100%; display: flex; align-items: center; justify-content: center; }
-        .ttd-result { max-height: 60px; max-width: 90%; display: none; } 
-        .line-nama { border-top: 1px solid black; width: 100%; margin-top: 5px; padding-top: 2px; font-weight: bold; text-transform: uppercase;}
-        .tgl-bawah { font-size: 10px; align-self: flex-start; margin-top: 2px; width: 100%; text-align: left; }
-        .catatan { font-size: 10px; margin-top: 10px; font-style: italic; }
-        #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); color: var(--primary); text-align: center; padding-top: 20%; z-index: 9999; font-size: 1.5rem; font-weight: 600; }
-        #draft-status { position: fixed; bottom: 20px; right: 20px; background: #dcfce7; color: #166534; padding: 10px 15px; border-radius: 50px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.1); opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 999; }
+        /* Grid Tanda Tangan */
+        .signature-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+        .sig-box { border: 1px dashed #ccc; padding: 10px; text-align: center; border-radius: 5px; background: #f9f9f9; }
+        .sig-box h4 { margin: 0 0 10px 0; font-size: 12px; color: #555; }
+        .sig-preview { width: 100%; height: 60px; object-fit: contain; margin-top: 5px; border: 1px solid #eee; display: none; }
     </style>
 </head>
 <body>
 
-<div id="loading">
-    <div style="background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: inline-block;">
-        <div style="font-size: 40px;">🚀</div>Menyimpan Data...<br><span style="font-size:1rem; font-weight:normal; color: #64748b;">Mohon tunggu sebentar</span>
-    </div>
-</div>
-
-<div id="draft-status">💾 Draft Tersimpan Otomatis</div>
-
 <div class="container">
-    <div class="panel-input">
-        <h3>📝 Data Pengajuan</h3>
-        <div class="form-group">
-            <label>Nama Salesman</label>
-            <select id="inNama" onchange="handleInput()">
-                <option value="">-- Pilih Salesman --</option>
-                </select>
-        </div>
-        <div class="form-group">
-            <label>Tanggal Dibawa</label>
-            <input type="date" id="inTgl" oninput="handleInput()">
-        </div>
-
-        <h3>📦 Detail Item</h3>
-        <div id="container-items"></div>
-        
-        <div class="btn-group">
-            <button class="btn btn-add" onclick="addItem(true)">+ Tambah Item</button>
-            <button class="btn btn-reset" onclick="resetItems()">Reset Item</button>
-        </div>
-
-        <h3 style="margin-top: 30px;">✍️ Tanda Tangan</h3>
-        
-        <div class="sig-wrapper">
-            <label>Salesman</label> <small style="color:#64748b; font-size:0.8rem;">(Nama otomatis dari atas)</small>
-            <div class="sig-box"><canvas id="cSales"></canvas></div>
-            <button class="btn btn-clear btn" onclick="clearSig('cSales')">Hapus TTD</button>
-        </div>
-        <div class="sig-wrapper">
-            <label>Leader</label>
-            <input type="text" id="inNamaLeader" placeholder="Nama Leader..." oninput="handleInput()">
-            <div class="sig-box"><canvas id="cLeader"></canvas></div>
-            <button class="btn btn-clear btn" onclick="clearSig('cLeader')">Hapus TTD</button>
-        </div>
-        <div class="sig-wrapper">
-            <label>Head of Admin</label>
-            <input type="text" id="inNamaAdmin" placeholder="Nama Head of Admin..." oninput="handleInput()">
-            <div class="sig-box"><canvas id="cAdmin"></canvas></div>
-            <button class="btn btn-clear btn" onclick="clearSig('cAdmin')">Hapus TTD</button>
-        </div>
-        <div class="sig-wrapper">
-            <label>Head of Branch</label>
-            <input type="text" id="inNamaBranch" placeholder="Nama Head of Branch..." oninput="handleInput()">
-            <div class="sig-box"><canvas id="cBranch"></canvas></div>
-            <button class="btn btn-clear btn" onclick="clearSig('cBranch')">Hapus TTD</button>
-        </div>
-
-        <button class="btn-reset-all" onclick="resetFormulirTotal()">⚠️ Kosongkan Formulir (Hapus Draft)</button>
-        <button class="btn-main" onclick="prosesSimpanDanDownload()">💾 Simpan Data & Download PDF</button>
+    <div class="header">
+        <h2>PT OTSUKA DISTRIBUTION INDONESIA</h2>
+        <p>Form Laporan Operasional Harian (V12.1 Auto Reset)</p>
     </div>
 
-    <div class="panel-preview">
-        <div id="halaman-laporan">
-            <div class="header-laporan">
-                <div class="header-left">PT OTSUKA DISTRIBUTION INDONESIA<br>CABANG MEDAN</div>
-                <div class="header-center">FORM PENGAJUAN EXTRA FAKTUR/TAGIHAN</div>
-                <div class="header-right">
-                    <table class="meta-table">
-                        <tr><td>NAMA SALESMAN</td><td class="titik-dua">:</td><td><span id="outNama" style="text-transform: uppercase;">-</span></td></tr>
-                        <tr><td>TANGGAL DIBAWA</td><td class="titik-dua">:</td><td><span id="outTgl">-</span></td></tr>
-                    </table>
-                </div>
-            </div>
-            <div class="wrapper-tabel">
-                <table class="main-table">
-                    <thead>
-                        <tr>
-                            <th class="col-no">NO</th><th class="col-kode">KODE PELANGGAN</th><th class="col-nama">NAMA PELANGGAN</th><th class="col-tgl">TGL FAKTUR</th>
-                            <th class="col-faktur">NOMOR FAKTUR</th><th class="col-jth">JATUH TEMPO</th><th class="col-jml">JUMLAH (Rp)</th><th class="col-rute">RUTE SEHARUSNYA</th>
-                            <th class="col-alasan">ALASAN</th><th class="col-ttd-outlet">TANDA TANGAN OUTLET</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-items"></tbody>
-                </table>
-            </div>
-            <div class="footer-ttd">
-                <div class="box-ttd"><div>DIAJUKAN OLEH<br>SALESMAN</div><div class="ttd-img-area"><img id="imgSales" class="ttd-result"></div><div class="line-nama">( <span id="outNamaBawah">...</span> )</div><div class="tgl-bawah">TGL. <span class="auto-date">...</span></div></div>
-                <div class="box-ttd"><div><br>LEADER</div><div class="ttd-img-area"><img id="imgLeader" class="ttd-result"></div><div class="line-nama">( <span id="outNamaLeader">...</span> )</div><div class="tgl-bawah">TGL. <span class="auto-date">...</span></div></div>
-                <div class="box-ttd"><div>DIPERIKSA OLEH<br>HEAD OF ADMIN</div><div class="ttd-img-area"><img id="imgAdmin" class="ttd-result"></div><div class="line-nama">( <span id="outNamaAdmin">...</span> )</div><div class="tgl-bawah">TGL. <span class="auto-date">...</span></div></div>
-                <div class="box-ttd"><div>DISETUJUI OLEH<br>HEAD OF BRANCH</div><div class="ttd-img-area"><img id="imgBranch" class="ttd-result"></div><div class="line-nama">( <span id="outNamaBranch">...</span> )</div><div class="tgl-bawah">TGL. <span class="auto-date">...</span></div></div>
-            </div>
-            <div class="catatan">NB : LAMPIRKAN DI DTFT PAGI H-1 FAKTUR DIKELUARKAN. UNTUK FAKTUR YANG KEMBALI DAN MINTA KELUAR BESOK HARAP DILAMPIRKAN PADA SORE HARI SAAT PENGEMBALIAN FAKTUR</div>
+    <div style="display: flex; gap: 20px;">
+        <div class="form-group" style="flex:1;">
+            <label>Tanggal Laporan:</label>
+            <input type="date" id="tglLaporan">
+        </div>
+        <div class="form-group" style="flex:1;">
+            <label>Nama Pelapor (Sales):</label>
+            <input type="text" id="namaPelapor" placeholder="Contoh: Budi Santoso">
         </div>
     </div>
+
+    <button class="btn-add" onclick="addRow()">+ Tambah Baris Aktivitas</button>
+    <table class="input-table" id="dataTable">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
+                <th width="40%">Keterangan Aktivitas</th>
+                <th width="35%">Lokasi / Outlet</th>
+                <th width="15%">Status</th>
+                <th width="5%">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <div style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 10px;">
+        <label>Upload Tanda Tangan (Opsional - Bisa dikosongkan untuk TTD Manual)</label>
+        <div class="signature-grid">
+            <div class="sig-box">
+                <h4>Dibuat Oleh (Sales)</h4>
+                <input type="text" id="name1" placeholder="Nama..." style="margin-bottom:5px; font-size:11px;">
+                <input type="file" id="file1" accept="image/*" onchange="previewImage(this, 'prev1')" style="font-size:10px;">
+                <img id="prev1" class="sig-preview">
+            </div>
+            <div class="sig-box">
+                <h4>Diketahui (SPV)</h4>
+                <input type="text" id="name2" placeholder="Nama..." style="margin-bottom:5px; font-size:11px;">
+                <input type="file" id="file2" accept="image/*" onchange="previewImage(this, 'prev2')" style="font-size:10px;">
+                <img id="prev2" class="sig-preview">
+            </div>
+            <div class="sig-box">
+                <h4>Disetujui (BM)</h4>
+                <input type="text" id="name3" placeholder="Nama..." style="margin-bottom:5px; font-size:11px;">
+                <input type="file" id="file3" accept="image/*" onchange="previewImage(this, 'prev3')" style="font-size:10px;">
+                <img id="prev3" class="sig-preview">
+            </div>
+            <div class="sig-box">
+                <h4>Admin / OM</h4>
+                <input type="text" id="name4" placeholder="Nama..." style="margin-bottom:5px; font-size:11px;">
+                <input type="file" id="file4" accept="image/*" onchange="previewImage(this, 'prev4')" style="font-size:10px;">
+                <img id="prev4" class="sig-preview">
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-generate" onclick="generatePDF()">🖨️ DOWNLOAD PDF LAPORAN</button>
 </div>
 
 <script>
-    // --- KONFIGURASI DATA (EDIT DISINI) ---
-    // Daftar Nama Salesman (Pisahkan dengan koma)
-    const LIST_SALESMAN = [
-        "TOGR01 Wendy Mahendra", 
-        "TOGR02 Edi Frederik Sinaga", 
-        "TORT01 Reinanda Barimbing", 
-        "TORT02 Muhammad Reza",
-        "TORT03 Sandy Ramadhan Febrianto",
-        "TORT04 Eko Darmawan", 
-        "TORT05 Wahyu Alamsyah Tanjung", 
-        "TORT06 Lutgar Ronimus Halawa",
-        "TORT07 Eko Prastyo",
-        "TORT08 Togar",
-        "TORT09 Agusto Fernando"
-    ];
-
-    // Daftar Rute (Pisahkan dengan koma)
-    const LIST_RUTE = [
-        "Senin 1", 
-        "Selasa 1", 
-        "Rabu 1", 
-        "Kamis 1",
-        "Jumat 1",
-        "Sabtu 1",
-        "Senin 2",
-        "Selasa 2",
-        "Rabu 2",
-        "Kamis 2",
-        "Jumat 2",
-        "Sabtu 2"
-    ];
-    // ----------------------------------------
-
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzWpvA2QEuEL7rpAcDSAAvVoloFESGaUUbAivtGTf8R3sPo9-FY8R1X_3H-OebDJesL/exec';
-    const pads = {};
-    const padIds = ['cSales', 'cLeader', 'cAdmin', 'cBranch'];
-    const imgIds = ['imgSales', 'imgLeader', 'imgAdmin', 'imgBranch'];
-
+    // 1. AUTO SET DATE
     window.onload = function() {
-        // Init Signature Pads
-        padIds.forEach((id, index) => {
-            const canvas = document.getElementById(id);
-            canvas.width = canvas.parentElement.clientWidth; 
-            canvas.height = canvas.parentElement.clientHeight;
-            pads[id] = new SignaturePad(canvas, { backgroundColor: 'rgba(255,255,255,0)' });
-            pads[id].addEventListener("endStroke", () => {
-                const img = document.getElementById(imgIds[index]);
-                if(!pads[id].isEmpty()) { 
-                    img.src = pads[id].toDataURL(); 
-                    img.style.display = 'block'; 
-                    saveDraft(); 
-                }
-            });
-        });
-
-        // INIT DROPDOWN SALESMAN
-        const selectSales = document.getElementById('inNama');
-        LIST_SALESMAN.forEach(nama => {
-            let option = document.createElement("option");
-            option.text = nama;
-            option.value = nama;
-            selectSales.add(option);
-        });
-
-        loadDraft();
+        resetFormToDefault(); // Panggil fungsi reset saat pertama kali buka
     };
 
-    function handleInput() { renderAll(); saveDraft(); }
-
-    // --- HELPER FUNCTIONS BARU (V12) ---
-    // 1. Title Case (Huruf Besar Awal Kata)
-    function toTitleCase(str) {
-        return str.toLowerCase().split(' ').map(function(word) {
-            return (word.charAt(0).toUpperCase() + word.slice(1));
-        }).join(' ');
-    }
-
-    // 2. Limit 5 Digit Angka
-    function limitKode(el) {
-        el.value = el.value.replace(/[^0-9]/g, '').slice(0, 5);
-        handleInput();
-    }
-
-    // 3. Auto Capitalize Input Nama
-    function autoCapNama(el) {
-        let start = el.selectionStart; // Simpan posisi kursor
-        el.value = toTitleCase(el.value);
-        el.setSelectionRange(start, start); // Kembalikan posisi kursor
-        handleInput();
-    }
-
-    // 4. Auto Tanggal Jatuh Tempo (+14 Hari)
-    function autoDateJatuhTempo(el) {
-        const row = el.parentElement.parentElement.parentElement; // Naik ke grid-item
-        const tglFakturVal = el.value;
-        const jthTempoInput = row.querySelector('.i-jth');
-
-        if (tglFakturVal) {
-            const date = new Date(tglFakturVal);
-            date.setDate(date.getDate() + 14); // Tambah 14 Hari
-            jthTempoInput.valueAsDate = date;
-        }
-        handleInput();
-    }
-
-    // --- Core Functions ---
-    function saveDraft() {
-        const dataDraft = {
-            nama: document.getElementById('inNama').value,
-            tgl: document.getElementById('inTgl').value,
-            leader: document.getElementById('inNamaLeader').value,
-            admin: document.getElementById('inNamaAdmin').value,
-            branch: document.getElementById('inNamaBranch').value,
-            items: [],
-            signatures: {}
-        };
-        const itemContainers = document.getElementById('container-items').children;
-        for (let i = 0; i < itemContainers.length; i++) {
-            const el = itemContainers[i];
-            dataDraft.items.push({
-                kode: el.querySelector('.i-kode').value,
-                nama: el.querySelector('.i-nama').value,
-                tglF: el.querySelector('.i-tgl').value,
-                fak: el.querySelector('.i-fak').value,
-                jth: el.querySelector('.i-jth').value,
-                rp: el.querySelector('.i-rp').value,
-                rute: el.querySelector('.i-rute').value,
-                alasan: el.querySelector('.i-alasan').value
-            });
-        }
-        imgIds.forEach((imgId, idx) => {
-            const imgEl = document.getElementById(imgId);
-            if(imgEl.src && imgEl.style.display !== 'none') {
-                dataDraft.signatures[idx] = imgEl.src;
-            }
-        });
-        localStorage.setItem('formDraft_Otsuka_V12', JSON.stringify(dataDraft));
-        const notif = document.getElementById('draft-status');
-        notif.style.opacity = '1';
-        setTimeout(() => { notif.style.opacity = '0'; }, 2000);
-    }
-
-    function loadDraft() {
-        const savedData = localStorage.getItem('formDraft_Otsuka_V12');
-        if (!savedData) { setDefaultDate(); addItem(); renderAll(); return; }
-        const data = JSON.parse(savedData);
-        document.getElementById('inNama').value = data.nama || '';
-        document.getElementById('inTgl').value = data.tgl || '';
-        if(!data.tgl) setDefaultDate();
-        document.getElementById('inNamaLeader').value = data.leader || '';
-        document.getElementById('inNamaAdmin').value = data.admin || '';
-        document.getElementById('inNamaBranch').value = data.branch || '';
-        document.getElementById('container-items').innerHTML = '';
-        rowCount = 0;
-        if (data.items && data.items.length > 0) {
-            data.items.forEach(item => {
-                addItem(false);
-                const lastItem = document.getElementById('container-items').lastChild;
-                lastItem.querySelector('.i-kode').value = item.kode;
-                lastItem.querySelector('.i-nama').value = item.nama;
-                lastItem.querySelector('.i-tgl').value = item.tglF;
-                lastItem.querySelector('.i-fak').value = item.fak;
-                lastItem.querySelector('.i-jth').value = item.jth;
-                lastItem.querySelector('.i-rp').value = item.rp;
-                lastItem.querySelector('.i-rute').value = item.rute;
-                lastItem.querySelector('.i-alasan').value = item.alasan;
-            });
-        } else { addItem(); }
-        if(data.signatures) {
-            Object.keys(data.signatures).forEach(idx => {
-                const imgEl = document.getElementById(imgIds[idx]);
-                imgEl.src = data.signatures[idx];
-                imgEl.style.display = 'block';
-            });
-        }
-        renderAll();
-    }
-
-    function setDefaultDate() {
-        const today = new Date();
-        if(!document.getElementById('inTgl').value) document.getElementById('inTgl').valueAsDate = today;
-        const dd = String(today.getDate()).padStart(2, '0');
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const yyyy = today.getFullYear();
-        document.querySelectorAll('.auto-date').forEach(span => span.innerText = `${dd}/${mm}/${yyyy}`);
-    }
-
-    function clearSig(id) {
-        pads[id].clear();
-        const idx = padIds.indexOf(id);
-        const img = document.getElementById(imgIds[idx]);
-        img.style.display = 'none'; img.src = '';
-        saveDraft();
-    }
-
-    function resetItems() { 
-        if(confirm("Reset semua item barang?")) { 
-            document.getElementById('container-items').innerHTML = ''; 
-            rowCount = 0; addItem(); renderAll(); saveDraft(); 
-        } 
-    }
-
-    function resetFormulirTotal() {
-        if(confirm("⚠️ HAPUS DRAFT?\nSemua data akan hilang.")) {
-            localStorage.removeItem('formDraft_Otsuka_V12');
-            location.reload();
-        }
-    }
-
-    function prosesSimpanDanDownload() {
-        const namaSales = document.getElementById('inNama').value;
-        const tglDibawa = document.getElementById('inTgl').value;
-        if(namaSales === "") { alert("❌ Pilih Nama Salesman!"); document.getElementById('inNama').focus(); return; }
-        if(tglDibawa === "") { alert("❌ Tanggal belum diisi!"); document.getElementById('inTgl').focus(); return; }
-
-        const itemContainers = document.getElementById('container-items').children;
-        let dataItems = [];
-        for (let i = 0; i < itemContainers.length; i++) {
-            const el = itemContainers[i];
-            const kode = el.querySelector('.i-kode').value;
-            const namaP = el.querySelector('.i-nama').value;
-            if(kode === "" && namaP === "") continue; 
-            dataItems.push({
-                kode: kode, namaPelanggan: namaP,
-                tglFaktur: el.querySelector('.i-tgl').value, noFaktur: el.querySelector('.i-fak').value,
-                jatuhTempo: el.querySelector('.i-jth').value, jumlah: el.querySelector('.i-rp').value,
-                rute: el.querySelector('.i-rute').value, alasan: el.querySelector('.i-alasan').value
-            });
-        }
-
-        const payload = { header: { namaSales: namaSales, tglDibawa: tglDibawa }, items: dataItems };
-        document.getElementById('loading').style.display = 'block';
-
-        fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('loading').style.display = 'none';
-            if(data.result === 'success') {
-                alert("✅ DATA TERSIMPAN!\nPDF akan diunduh.");
-                generatePDF();
-            } else {
-                alert("⚠️ Gagal Database: " + data.error + "\nPDF tetap diunduh.");
-                generatePDF();
-            }
-        })
-        .catch(error => {
-            document.getElementById('loading').style.display = 'none';
-            alert("⚠️ Error Koneksi. PDF tetap diunduh.");
-            generatePDF();
-        });
-    }
-
-    function formatTanggalIndo(dateString) {
-        if (!dateString) return "........................";
-        const parts = dateString.split('-'); 
-        if (parts.length !== 3) return dateString;
-        return `${parts[2]}/${parts[1]}/${parts[0]}`; 
-    }
-
-    let rowCount = 0;
-    function addItem(autoSave = true) {
-        rowCount++;
+    // 2. FUNGSI TABEL (Tambah/Hapus Baris)
+    function addRow() {
+        const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+        const row = tbody.insertRow();
+        const num = tbody.rows.length;
         
-        // Buat Opsi Rute HTML
-        let optionsRute = `<option value="">-- Pilih Rute --</option>`;
-        LIST_RUTE.forEach(r => { optionsRute += `<option value="${r}">${r}</option>`; });
-
-        const div = document.createElement('div');
-        div.className = 'grid-item'; 
-        div.innerHTML = `
-            <div style="font-size:0.85rem; font-weight:600; color:#2563eb; margin-bottom:10px; border-bottom:1px dashed #cbd5e1; padding-bottom:5px;">Baris Barang #${rowCount}</div>
-            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
-                <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Kode (Max 5)</label>
-                    <input type="text" placeholder="12345" class="i-kode" oninput="limitKode(this)">
-                </div>
-                <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Nama Pelanggan</label>
-                    <input type="text" placeholder="Nama Toko..." class="i-nama" oninput="autoCapNama(this)">
-                </div>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:10px;">
-                <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#2563eb; margin-bottom:2px; display:block;">📅 Tgl Faktur</label>
-                    <input type="date" class="i-tgl" onchange="autoDateJatuhTempo(this)">
-                </div>
-                <div><label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">No Faktur</label><input type="text" placeholder="No Faktur" class="i-fak" oninput="handleInput()"></div>
-                <div><label style="font-size:0.75rem; font-weight:600; color:#ef4444; margin-bottom:2px; display:block;">📅 Jatuh Tempo</label><input type="date" class="i-jth" oninput="handleInput()"></div>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:10px;">
-                <div><label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Jumlah (Rp)</label><input type="number" placeholder="Rp" class="i-rp" oninput="handleInput()"></div>
-                <div>
-                    <label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Rute</label>
-                    <select class="i-rute" onchange="handleInput()">${optionsRute}</select>
-                </div>
-                <div><label style="font-size:0.75rem; font-weight:600; color:#64748b; margin-bottom:2px; display:block;">Alasan</label><input type="text" placeholder="Alasan" class="i-alasan" oninput="handleInput()"></div>
-            </div>`;
-        document.getElementById('container-items').appendChild(div);
-        if(autoSave) saveDraft();
-        renderAll();
+        row.innerHTML = `
+            <td style="text-align:center">${num}</td>
+            <td><input type="text" class="act" placeholder="Isi aktivitas..."></td>
+            <td><input type="text" class="loc" placeholder="Nama Toko/Lokasi"></td>
+            <td><input type="text" class="stat" placeholder="Selesai/Pending" value="Selesai"></td>
+            <td style="text-align:center"><button class="btn-remove" onclick="removeRow(this)">X</button></td>
+        `;
     }
 
-    function renderAll() {
-        const namaSales = document.getElementById('inNama').value;
-        const tglInput = document.getElementById('inTgl').value;
-        document.getElementById('outNama').innerText = namaSales || '........................';
-        document.getElementById('outTgl').innerText = formatTanggalIndo(tglInput);
-        document.getElementById('outNamaBawah').innerText = namaSales || '........................';
-        document.getElementById('outNamaLeader').innerText = document.getElementById('inNamaLeader').value || '........................';
-        document.getElementById('outNamaAdmin').innerText = document.getElementById('inNamaAdmin').value || '........................';
-        document.getElementById('outNamaBranch').innerText = document.getElementById('inNamaBranch').value || '........................';
+    function removeRow(btn) {
+        const row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+        renumberRows();
+    }
 
-        const tbody = document.getElementById('tbody-items');
-        tbody.innerHTML = '';
-        const items = document.getElementById('container-items').children;
-        for (let i = 0; i < items.length; i++) {
-            const el = items[i];
-            const rp = el.querySelector('.i-rp').value;
-            const fmtRp = rp ? parseInt(rp).toLocaleString('id-ID') : '';
-            tbody.innerHTML += `<tr><td>${i + 1}</td><td>${el.querySelector('.i-kode').value}</td><td style="text-align:left;">${el.querySelector('.i-nama').value}</td><td>${formatTanggalIndo(el.querySelector('.i-tgl').value)}</td><td>${el.querySelector('.i-fak').value}</td><td>${formatTanggalIndo(el.querySelector('.i-jth').value)}</td><td style="text-align:right;">${fmtRp}</td><td>${el.querySelector('.i-rute').value}</td><td style="text-align:left;">${el.querySelector('.i-alasan').value}</td><td></td></tr>`;
-        }
-        const minRow = 5;
-        if(items.length < minRow) {
-            for(let k=0; k < (minRow - items.length); k++) tbody.innerHTML += `<tr style="height:30px"><td>${items.length + k + 1}</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+    function renumberRows() {
+        const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+        for (let i = 0; i < tbody.rows.length; i++) {
+            tbody.rows[i].cells[0].innerText = i + 1;
         }
     }
 
-    function generatePDF() {
-        const element = document.getElementById('halaman-laporan');
-        const opt = { margin: 0, filename: 'Laporan_Extra_Faktur.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, scrollY: 0, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-        window.scrollTo(0,0);
-        html2pdf().set(opt).from(element).save();
+    // 3. PREVIEW GAMBAR
+    function previewImage(input, imgId) {
+        const preview = document.getElementById(imgId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // 4. GENERATE PDF
+    async function generatePDF() {
+        // Validasi Nama Sales dulu
+        const salesName = document.getElementById('namaPelapor').value;
+        if(!salesName) {
+            alert("Harap isi Nama Pelapor terlebih dahulu!");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // --- HEADER ---
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(0, 86, 179);
+        doc.text("PT OTSUKA DISTRIBUTION INDONESIA", 105, 15, null, null, "center");
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "normal");
+        doc.text("CABANG MEDAN - LAPORAN OPERASIONAL", 105, 22, null, null, "center");
+        doc.setLineWidth(0.5);
+        doc.line(15, 26, 195, 26);
+
+        // --- INFO ---
+        const tgl = document.getElementById('tglLaporan').value;
+        
+        doc.setFontSize(10);
+        doc.text(`Tanggal : ${tgl}`, 15, 35);
+        doc.text(`Nama    : ${salesName}`, 15, 40);
+
+        // --- TABEL ---
+        let tableData = [];
+        const rows = document.querySelectorAll('#dataTable tbody tr');
+        rows.forEach((row, index) => {
+            const act = row.querySelector('.act').value;
+            const loc = row.querySelector('.loc').value;
+            const stat = row.querySelector('.stat').value;
+            tableData.push([index+1, act, loc, stat]);
+        });
+
+        doc.autoTable({
+            startY: 45,
+            head: [['No', 'Keterangan Aktivitas', 'Lokasi / Outlet', 'Status']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 86, 179] },
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: { 0: {halign: 'center'}, 3: {halign: 'center'} }
+        });
+
+        // --- TANDA TANGAN ---
+        let finalY = doc.lastAutoTable.finalY + 10;
+        if (finalY > 220) { doc.addPage(); finalY = 20; }
+
+        const xPos = [15, 62, 110, 158];
+        const roles = ["Dibuat Oleh", "Diketahui", "Disetujui", "Admin/OM"];
+        
+        doc.setFontSize(8);
+        
+        for(let i=1; i<=4; i++) {
+            let x = xPos[i-1];
+            doc.text(roles[i-1], x + 15, finalY, null, null, "center");
+            
+            const input = document.getElementById('file'+i);
+            if (input.files && input.files[0]) {
+                const imgData = await getBase64(input.files[0]);
+                try {
+                    doc.addImage(imgData, 'JPEG', x, finalY + 3, 30, 15);
+                } catch (e) { console.error(e); }
+            }
+            
+            doc.line(x, finalY + 25, x + 30, finalY + 25);
+            
+            const nama = document.getElementById('name'+i).value;
+            const namaText = nama ? `(${nama})` : "(..................)";
+            doc.text(namaText, x + 15, finalY + 29, null, null, "center");
+        }
+
+        const fileName = `Laporan_${salesName.replace(/\s+/g, '_')}_${tgl}.pdf`;
+        doc.save(fileName);
+
+        // --- LOGIKA RESET FORM SETELAH DOWNLOAD ---
+        setTimeout(function() {
+            // Beri jeda 1 detik agar browser sempat memulai download
+            if(confirm("Laporan berhasil didownload! Form akan dikosongkan untuk laporan baru.")) {
+                resetFormToDefault();
+            }
+        }, 1000);
+    }
+
+    // FUNGSI BERSIH-BERSIH (RESET)
+    function resetFormToDefault() {
+        // 1. Reset Input Text
+        document.getElementById('namaPelapor').value = "";
+        
+        // 2. Reset Tanggal ke Hari Ini
+        document.getElementById('tglLaporan').valueAsDate = new Date();
+
+        // 3. Reset Tabel (Hapus semua, sisakan 1)
+        const tbody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = ""; 
+        addRow(); // Tambah 1 baris kosong
+
+        // 4. Reset Area Tanda Tangan
+        for(let i=1; i<=4; i++) {
+            document.getElementById('name'+i).value = ""; // Hapus Nama
+            document.getElementById('file'+i).value = ""; // Hapus File
+            
+            // Hapus Preview Gambar
+            const img = document.getElementById('prev'+i);
+            img.src = "";
+            img.style.display = "none";
+        }
+    }
+
+    function getBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
     }
 </script>
+
 </body>
 </html>
-
