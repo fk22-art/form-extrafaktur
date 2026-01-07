@@ -504,13 +504,52 @@
         }
     }
 
+    // --- FITUR BARU: RESET OTOMATIS SETELAH DOWNLOAD ---
+
+    function resetTanpaTanya() {
+        // 1. Hapus memori penyimpanan sementara (LocalStorage)
+        localStorage.removeItem('formDraft_Otsuka_V12');
+        
+        // 2. Reload halaman agar semua input, variabel, dan tanda tangan bersih total
+        location.reload();
+    }
+
     function generatePDF() {
         const element = document.getElementById('halaman-laporan');
-        const opt = { margin: 0, filename: 'Laporan_Extra_Faktur.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, scrollY: 0, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+        
+        // Opsi PDF
+        const opt = { 
+            margin: 0, 
+            filename: 'Laporan_Extra_Faktur.pdf', 
+            image: { type: 'jpeg', quality: 0.98 }, 
+            html2canvas: { scale: 2, scrollY: 0, useCORS: true }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
+        };
+
         window.scrollTo(0,0);
-        html2pdf().set(opt).from(element).save();
+        
+        // PROSES GENERATE & DOWNLOAD
+        html2pdf()
+            .set(opt)
+            .from(element)
+            .save()
+            .then(function() {
+                // Kode ini berjalan SETELAH PDF berhasil didownload
+                setTimeout(function() {
+                    alert("✅ PDF Berhasil Didownload! Form akan dibersihkan untuk data baru.");
+                    resetTanpaTanya(); // Panggil fungsi reset otomatis
+                }, 1000); // Jeda 3 detik agar download tidak terputus
+            });
+    }
+
+    // Fungsi Reset Manual (Tombol Kosongkan Formulir)
+    function resetFormulirTotal() {
+        if(confirm("⚠️ HAPUS DRAFT?\nSemua data akan hilang.")) {
+            resetTanpaTanya();
+        }
     }
 </script>
 </body>
 </html>
+
 
